@@ -38,6 +38,67 @@ function plain(line) {
 // Visual width of a plain string (already stripped)
 function plen(s) { return s.replace(/\x1B\[[0-9;]*m/g, "").length; }
 
+// Highlight all occurrences of `query` within an ANSI-coloured line.
+// Walks the string char-by-char so ANSI escape sequences don't shift offsets.
+const HL_MATCH   = `${ESC}[48;2;62;68;82m${ESC}[38;2;229;192;123m`; // other matches
+const HL_CURRENT = `${ESC}[48;2;229;192;123m${ESC}[38;2;0;0;0m`;    // current match
+const HL_OFF     = `${ESC}[49m${ESC}[39m`;
+
+function highlightInLine(line, query, isCurrent) {
+  if (!query) return line;
+  const p = plain(line).toLowerCase();
+  const q = query.toLowerCase();
+
+  // Collect all [start, end) ranges in plain-text coordinates
+  const ranges = [];
+  let pos = 0;
+  while ((pos = p.indexOf(q, pos)) !== -1) {
+    ranges.push([pos, pos + q.length]);
+    pos++;
+  }
+  if (!ranges.length) return line;
+
+  const ON = isCurrent ? HL_CURRENT : HL_MATCH;
+
+  let out = "";
+  let vis = 0;  // visual position in plain text
+  let ri  = 0;  // current range index
+  let hl  = false;
+  let i   = 0;  // byte index into line
+
+  while (i < line.length) {
+    // Close highlight when we exit the current range
+    if (hl && ri < ranges.length && vis >= ranges[ri][1]) {
+      out += HL_OFF;
+      hl = false;
+      ri++;
+    }
+    // Open highlight when we enter the next range
+    if (!hl && ri < ranges.length && vis >= ranges[ri][0]) {
+      out += ON;
+      hl = true;
+    }
+
+    // OSC 8 hyperlink: ESC ] 8 ; ; url ESC \  — skip, no visual width
+    if (line[i] === "\x1B" && line[i + 1] === "]") {
+      const end = line.indexOf("\x1B\\", i + 2);
+      if (end !== -1) { out += line.slice(i, end + 2); i = end + 2; continue; }
+    }
+    // CSI SGR: ESC [ … m — skip, no visual width
+    if (line[i] === "\x1B" && line[i + 1] === "[") {
+      const end = line.indexOf("m", i + 2);
+      if (end !== -1) { out += line.slice(i, end + 1); i = end + 1; continue; }
+    }
+
+    out += line[i];
+    vis++;
+    i++;
+  }
+
+  if (hl) out += HL_OFF;
+  return out;
+}
+
 export function launch(title, lines) {
   // Viewport state
   let offset = 0;
@@ -89,12 +150,16 @@ export function launch(title, lines) {
     // Row 1: top chrome bar
     out.push(move(1, 1) + ERASE_L + topBar(title, w));
 
-    // Rows 2..h-1: content with optional gutter
+    // Rows 2..h-1: content with optional gutter + search highlighting
     const slice = lines.slice(offset, offset + visible());
     for (let i = 0; i < visible(); i++) {
       const absLine = offset + i;
       const gutter  = gutterFor(absLine);
-      out.push(move(i + 2, 1) + ERASE_L + gutter + (slice[i] ?? ""));
+      let   content = slice[i] ?? "";
+      if (searchQuery && matchSet.has(absLine)) {
+        content = highlightInLine(content, searchQuery, matchLines[matchIdx] === absLine);
+      }
+      out.push(move(i + 2, 1) + ERASE_L + gutter + content);
     }
 
     // Row h: status / search bar
@@ -180,11 +245,13 @@ export function launch(title, lines) {
     const s = raw.toString();
 
     // Mouse SGR events: \x1B[<btn;col;rowm
-    const mouse = s.match(/^\x1B\[<(\d+);\d+;\d+m$/);
+    // SGR mouse: ESC[<btn;col;rowM (press) or ESC[<btn;col;rowm (release)
+    // Scroll wheel sends press events (M), so match both m and M
+    const mouse = s.match(/\x1B\[<(\d+);\d+;\d+[mM]/);
     if (mouse) {
       const btn = parseInt(mouse[1]);
-      if (btn === 64) { offset = Math.max(offset - 3, 0);            draw(); }
-      if (btn === 65) { offset = Math.min(offset + 3, maxOff());      draw(); }
+      if (btn === 64) { offset = Math.max(offset - 3, 0);        draw(); }
+      if (btn === 65) { offset = Math.min(offset + 3, maxOff()); draw(); }
       return;
     }
 

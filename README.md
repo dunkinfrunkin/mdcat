@@ -9,45 +9,18 @@
 
 ---
 
-## Demo
+## What it looks like
 
-```
-╔══════════════════════════════════════╗
-║  GETTING STARTED                     ║
-╚══════════════════════════════════════╝
+- **H1** headings render in a purple Unicode box
+- **H2** headings render in bold blue with an underline bar
+- **H3–H6** headings use green → yellow → cyan → dim
+- **Code blocks** get a bordered box with a language tag and syntax highlighting
+- **Blockquotes** get an amber `▌` bar with dim italic text
+- **Lists** use `●` / `○` / `‣` bullets; task lists use `☑` / `☐`
+- **Tables** render with full Unicode box-drawing borders
+- **Links** are blue and underlined, clickable in iTerm2 / Kitty / WezTerm
 
-Overview
-────────
-Welcome to **mdcat**, a fast terminal Markdown viewer.
-
-  ┌─ javascript ─────────────────────────┐
-  │ function greet(name) {               │
-  │   console.log(`Hello, ${name}!`);   │
-  │ }                                    │
-  └──────────────────────────────────────┘
-
-▌ This is a blockquote with an amber bar
-▌ and dim italic text.
-
-  ● Unordered item one
-  ● Unordered item two
-    ○ Nested item
-  ☑ Completed task
-  ☐ Pending task
-
-  ┌──────┬───────┬───────┐
-  │ Name │ Score │ Grade │
-  ├──────┼───────┼───────┤
-  │ Alice│    95 │   A   │
-  │ Bob  │    82 │   B   │
-  └──────┴───────┴───────┘
-
-─────────────────────────────────────────
-
- q  /  j k  ↑↓  space  g G          72%
-```
-
-The top bar shows the filename and file type badge. The bottom bar shows navigation hints and scroll percentage. In search mode (`/`) matches are highlighted with a gold gutter marker.
+The top chrome bar shows the filename and file type. The bottom bar shows key hints and scroll percentage. Press `/` to search — matching lines get a gold `▶` gutter marker.
 
 ---
 

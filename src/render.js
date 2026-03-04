@@ -116,9 +116,17 @@ function inline(tokens) {
         case "codespan":
           return c.code(" " + (tok.text ?? "") + " ");
         case "link": {
-          const label =
-            tok.tokens?.length ? inline(tok.tokens) : (tok.href ?? "");
           const href = tok.href ?? "";
+          // Badge pattern: link whose only child is a single image (e.g. shields.io)
+          // Render as a compact [alt] text tag instead of a broken image icon.
+          if (tok.tokens?.length === 1 && tok.tokens[0].type === "image") {
+            const alt = tok.tokens[0].text || tok.tokens[0].alt || "";
+            if (alt) {
+              const badge = chalk.dim("[") + chalk.hex("#abb2bf")(alt) + chalk.dim("]");
+              return `\x1B]8;;${href}\x1B\\${badge}\x1B]8;;\x1B\\`;
+            }
+          }
+          const label = tok.tokens?.length ? inline(tok.tokens) : href;
           // OSC 8 clickable hyperlink (iTerm2, Kitty, WezTerm, foot, …)
           return `\x1B]8;;${href}\x1B\\${c.link(label)}\x1B]8;;\x1B\\`;
         }
@@ -255,7 +263,8 @@ function code(tok, w) {
       vlen(hline) > innerW ? vtrunc(hline, innerW) : hline;
     const pad = Math.max(0, innerW - vlen(truncated));
     lines.push(
-      c.border("│") +
+      MARGIN +
+        c.border("│") +
         " " +
         truncated +
         " ".repeat(pad) +
@@ -265,7 +274,7 @@ function code(tok, w) {
   }
 
   // Bottom border
-  lines.push(c.border("└" + "─".repeat(borderW) + "┘"));
+  lines.push(MARGIN + c.border("└" + "─".repeat(borderW) + "┘"));
   lines.push("");
   return lines;
 }

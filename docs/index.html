@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mdcat — View Markdown in your terminal</title>
+  <meta name="description" content="A fast, beautiful terminal pager for Markdown. Syntax-highlighted code, tables, search, mouse support — zero config.">
+  <meta property="og:title" content="mdcat">
+  <meta property="og:description" content="A fast, beautiful terminal pager for Markdown.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --bg2:       #161b22;
+      --bg3:       #21262d;
+      --border:    #30363d;
+      --fg:        #e6edf3;
+      --fg2:       #9198a1;
+      --fg3:       #656d76;
+      --purple:    #c678dd;
+      --blue:      #61afef;
+      --green:     #98c379;
+      --yellow:    #e5c07b;
+      --cyan:      #56b6c2;
+      --red:       #e06c75;
+      --radius:    10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ───────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 56px;
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--purple);
+    }
+
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a { color: var(--fg2); font-size: 0.875rem; transition: color .15s; }
+    .nav-links a:hover { color: var(--fg); text-decoration: none; }
+
+    .nav-links .btn {
+      padding: .35rem .85rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: var(--fg);
+    }
+    .nav-links .btn:hover { background: var(--bg3); text-decoration: none; }
+
+    /* ── Hero ──────────────────────────────────────────────── */
+    .hero {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 80px 2rem 60px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .3rem .75rem;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: .75rem;
+      color: var(--fg2);
+      margin-bottom: 1.5rem;
+    }
+    .badge span { color: var(--green); }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+      margin-bottom: 1.25rem;
+    }
+    h1 em { font-style: normal; color: var(--purple); }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--fg2);
+      max-width: 540px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .hero-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .65rem 1.4rem;
+      background: var(--purple);
+      color: #fff;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: .9rem;
+      transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: .85; text-decoration: none; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .65rem 1.4rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--fg);
+      font-size: .9rem;
+      transition: background .15s;
+    }
+    .btn-secondary:hover { background: var(--bg3); text-decoration: none; }
+
+    .install-snippet {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .install-box {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .55rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .875rem;
+    }
+    .install-box .prompt { color: var(--fg3); }
+    .install-box .cmd   { color: var(--green); }
+    .install-box .arg   { color: var(--yellow); }
+
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--fg2);
+      font-size: .75rem;
+      padding: .3rem .65rem;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: inherit;
+    }
+    .copy-btn:hover { background: var(--bg3); color: var(--fg); }
+
+    /* ── Terminal demo ─────────────────────────────────────── */
+    .demo-wrap {
+      max-width: 860px;
+      margin: 0 auto 80px;
+      padding: 0 2rem;
+    }
+
+    .terminal {
+      background: #1a1d21;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+
+    .term-chrome {
+      display: flex;
+      align-items: center;
+      padding: .6rem 1rem;
+      background: #21252b;
+      border-bottom: 1px solid var(--border);
+      gap: .5rem;
+    }
+    .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .term-dot.r { background: #ff5f57; }
+    .term-dot.y { background: #febc2e; }
+    .term-dot.g { background: #28c840; }
+    .term-title {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      color: var(--fg3);
+    }
+
+    /* top bar inside the TUI */
+    .tui-topbar {
+      background: #21252b;
+      padding: .3rem .75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      display: flex;
+      justify-content: space-between;
+      color: var(--fg3);
+    }
+    .tui-topbar .badge-md {
+      color: var(--purple);
+      margin-right: .4rem;
+    }
+    .tui-topbar .filename { color: #fff; font-weight: 500; }
+
+    .term-body {
+      padding: 1rem 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      line-height: 1.65;
+      color: var(--fg);
+      min-height: 320px;
+    }
+
+    /* TUI status bar */
+    .tui-statusbar {
+      background: #21252b;
+      padding: .3rem .75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      display: flex;
+      justify-content: space-between;
+      color: var(--fg3);
+    }
+
+    /* Markdown rendering styles (simulating the TUI output) */
+    .md-h1-box {
+      color: var(--purple);
+      white-space: pre;
+      display: block;
+      margin-bottom: .25rem;
+    }
+    .md-h2 { color: var(--blue); font-weight: bold; }
+    .md-h2-bar { color: var(--blue); opacity: .5; }
+    .md-h3 { color: var(--green); font-weight: bold; }
+    .md-p { color: var(--fg); }
+    .md-bold { font-weight: bold; color: #fff; }
+    .md-italic { font-style: italic; }
+    .md-code-inline { background: #2a2a2a; color: var(--yellow); padding: 0 .3em; border-radius: 3px; }
+    .md-link { color: var(--blue); text-decoration: underline; }
+
+    .md-code-block {
+      border: 1px solid #3a3d42;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: .5rem 0;
+    }
+    .md-code-top {
+      padding: .2rem .6rem;
+      background: #21252b;
+      color: var(--yellow);
+      font-size: .75rem;
+      border-bottom: 1px solid #3a3d42;
+    }
+    .md-code-body {
+      padding: .4rem .75rem;
+      color: #abb2bf;
+      white-space: pre;
+    }
+    .kw { color: #c678dd; }
+    .fn { color: #61afef; }
+    .str { color: #98c379; }
+    .num { color: #d19a66; }
+    .cm { color: #5c6370; font-style: italic; }
+
+    .md-bq {
+      border-left: 3px solid var(--yellow);
+      padding-left: .75rem;
+      color: var(--fg2);
+      font-style: italic;
+      margin: .25rem 0;
+    }
+
+    .md-bullet { color: var(--blue); margin-right: .4rem; }
+    .md-check-done { color: var(--green); }
+    .md-check-todo { color: var(--fg3); }
+
+    .md-table { border-collapse: collapse; margin: .5rem 0; }
+    .md-table td, .md-table th {
+      border: 1px solid #3a3d42;
+      padding: .2rem .6rem;
+      font-size: .78rem;
+    }
+    .md-table th { color: var(--blue); font-weight: bold; background: #21252b; }
+
+    .search-highlight { background: #3e4452; color: var(--yellow); }
+    .search-highlight-current { background: var(--yellow); color: #000; }
+    .gutter-current { color: var(--yellow); margin-right: .4rem; }
+    .gutter-match { color: var(--fg3); margin-right: .4rem; }
+
+    /* ── Features ──────────────────────────────────────────── */
+    section { max-width: 900px; margin: 0 auto; padding: 0 2rem 80px; }
+
+    .section-label {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: .75rem;
+    }
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      margin-bottom: .75rem;
+    }
+    .section-sub { color: var(--fg2); max-width: 480px; margin-bottom: 2.5rem; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .feature-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      transition: border-color .15s;
+    }
+    .feature-card:hover { border-color: var(--purple); }
+
+    .feature-icon {
+      font-size: 1.4rem;
+      margin-bottom: .75rem;
+    }
+    .feature-title {
+      font-weight: 600;
+      margin-bottom: .35rem;
+      font-size: .95rem;
+    }
+    .feature-desc { font-size: .85rem; color: var(--fg2); line-height: 1.55; }
+
+    /* ── Install ───────────────────────────────────────────── */
+    .install-tabs { display: flex; gap: .5rem; margin-bottom: 1rem; }
+    .tab {
+      padding: .4rem .9rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: .8rem;
+      cursor: pointer;
+      background: none;
+      color: var(--fg2);
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .tab.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+    .tab:not(.active):hover { background: var(--bg3); color: var(--fg); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .code-block {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .875rem;
+      line-height: 1.7;
+      position: relative;
+    }
+    .code-block .prompt { color: var(--fg3); user-select: none; }
+    .code-block .c { color: var(--green); }
+    .code-block .comment { color: var(--fg3); }
+    .code-copy {
+      position: absolute;
+      top: .75rem;
+      right: .75rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: .25rem .5rem;
+      font-size: .7rem;
+      color: var(--fg2);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .code-copy:hover { color: var(--fg); }
+
+    /* ── Keyboard shortcuts ────────────────────────────────── */
+    .keys-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: .6rem;
+    }
+    .key-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .6rem .9rem;
+    }
+    .key-row .keys { display: flex; gap: .3rem; flex-shrink: 0; }
+    kbd {
+      display: inline-block;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      padding: .15rem .45rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      color: var(--fg);
+    }
+    .key-desc { font-size: .85rem; color: var(--fg2); }
+
+    /* ── Footer ────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      color: var(--fg3);
+      font-size: .85rem;
+    }
+    footer a { color: var(--fg2); }
+    footer a:hover { color: var(--fg); }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2.2rem; }
+      .hero-actions { flex-direction: column; align-items: center; }
+      .install-snippet { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ──────────────────────────────────────────────────── -->
+<nav>
+  <span class="nav-brand">mdcat</span>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#install">Install</a>
+    <a href="#keys">Keys</a>
+    <a href="https://github.com/frankchan/mdcat" class="btn" target="_blank">GitHub ↗</a>
+  </div>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="badge">
+    <span>●</span> Open Source — MIT License
+  </div>
+  <h1>View Markdown <em>beautifully</em><br>in your terminal</h1>
+  <p class="hero-sub">
+    A fast, keyboard-driven pager for Markdown. Syntax-highlighted code,
+    tables, search, mouse support — no config, no dependencies to manage.
+  </p>
+  <div class="hero-actions">
+    <a href="#install" class="btn-primary">Get started →</a>
+    <a href="https://github.com/frankchan/mdcat" class="btn-secondary" target="_blank">
+      View on GitHub
+    </a>
+  </div>
+  <div class="install-snippet">
+    <div class="install-box">
+      <span class="prompt">$</span>
+      <span class="cmd">npx</span>
+      <span class="arg">mdcat README.md</span>
+    </div>
+    <button class="copy-btn" onclick="copy('npx mdcat README.md', this)">Copy</button>
+  </div>
+</div>
+
+<!-- ── Terminal demo ─────────────────────────────────────────── -->
+<div class="demo-wrap">
+  <div class="terminal">
+    <div class="term-chrome">
+      <div class="term-dot r"></div>
+      <div class="term-dot y"></div>
+      <div class="term-dot g"></div>
+      <div class="term-title">zsh — 120×40</div>
+    </div>
+
+    <!-- TUI top bar -->
+    <div class="tui-topbar">
+      <span><span class="badge-md">[md]</span><span class="filename">README.md</span></span>
+      <span>mdcat</span>
+    </div>
+
+    <!-- TUI content -->
+    <div class="term-body">
+      <div style="margin-bottom:.6rem">
+        <span class="md-h1-box">╔═════════════╗
+║  MDCAT      ║
+╚═════════════╝</span>
+      </div>
+
+      <div style="margin-bottom:.5rem">
+        <span class="md-p">View markdown files <span class="md-bold">beautifully</span> in your terminal.
+A fast, keyboard-driven pager for all GFM elements.</span>
+      </div>
+
+      <div style="margin-bottom:.15rem"><span class="md-h2">Features</span></div>
+      <div style="margin-bottom:.6rem"><span class="md-h2-bar">────────</span></div>
+
+      <div class="md-code-block" style="margin-bottom:.6rem">
+        <div class="md-code-top">javascript</div>
+        <div class="md-code-body"><span class="kw">import</span> { marked } <span class="kw">from</span> <span class="str">"marked"</span>;
+
+<span class="kw">const</span> tokens = marked.<span class="fn">lexer</span>(content);
+<span class="cm">// renders to ANSI-coloured terminal lines</span></div>
+      </div>
+
+      <div class="md-bq" style="margin-bottom:.6rem">
+        Tip: pipe into <span style="color:var(--yellow)">less -R</span> for scrollable output.
+      </div>
+
+      <div style="line-height:1.9">
+        <div><span class="md-bullet">●</span><span class="md-bold">Syntax highlighted</span> code blocks via highlight.js</div>
+        <div><span class="md-bullet">●</span>Full <span class="md-code-inline">GFM</span> — tables, task lists, strikethrough</div>
+        <div><span class="md-bullet">●</span><span class="md-check-done">☑</span> Mouse wheel + <kbd style="font-size:.75rem;background:#2a2a2a;border-color:#3a3d42;color:var(--fg)">/ </kbd> search with inline highlights</div>
+        <div style="padding-left:1.1rem"><span class="md-bullet" style="color:var(--fg3)">○</span>OSC 8 <span class="md-link">clickable links</span> in iTerm2 / Kitty</div>
+      </div>
+
+      <div style="margin-top:.6rem;margin-bottom:.15rem"><span class="md-h2">Benchmarks</span></div>
+      <div style="margin-bottom:.6rem"><span class="md-h2-bar">──────────</span></div>
+
+      <table class="md-table">
+        <tr><th>File size</th><th>Render time</th></tr>
+        <tr><td>10 KB</td><td>&lt; 10 ms</td></tr>
+        <tr><td>100 KB</td><td>&lt; 80 ms</td></tr>
+        <tr><td>1 MB</td><td>&lt; 600 ms</td></tr>
+      </table>
+    </div>
+
+    <!-- TUI status bar -->
+    <div class="tui-statusbar">
+      <span style="opacity:.6"> q  /  j k  ↑↓  space  g G</span>
+      <span>1–28 / 62  45%</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Features ─────────────────────────────────────────────── -->
+<section id="features">
+  <p class="section-label">Why mdcat</p>
+  <h2 class="section-title">Everything you need, nothing you don't</h2>
+  <p class="section-sub">Built on raw ANSI escape codes — no native deps, no Electron, no browser.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <div class="feature-title">One Dark palette</div>
+      <div class="feature-desc">Colour-coded headings, amber inline code, syntax-highlighted code blocks via highlight.js.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <div class="feature-title">Incremental search</div>
+      <div class="feature-desc">Press <kbd>/</kbd> to search. Matches highlight inline as you type. <kbd>n</kbd> / <kbd>N</kbd> to cycle.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🖱️</div>
+      <div class="feature-title">Mouse wheel scrolling</div>
+      <div class="feature-desc">Full SGR mouse support. Scroll with your trackpad or mouse wheel — no key combos needed.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <div class="feature-title">Clickable links</div>
+      <div class="feature-desc">OSC 8 hyperlinks in iTerm2, Kitty, WezTerm, and foot. Click to open in your browser.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Full GFM support</div>
+      <div class="feature-desc">Tables with alignment, task lists, strikethrough, blockquotes, nested lists — all rendered.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">Zero config</div>
+      <div class="feature-desc">No dotfiles, no config, no setup. <code style="font-size:.85em;color:var(--yellow)">npx mdcat file.md</code> and you're done.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Install ───────────────────────────────────────────────── -->
+<section id="install">
+  <p class="section-label">Installation</p>
+  <h2 class="section-title">Up and running in seconds</h2>
+  <p class="section-sub">Three ways to install — or skip installation entirely with <code style="color:var(--yellow)">npx</code>.</p>
+
+  <div class="install-tabs">
+    <button class="tab active" onclick="showTab('npx', this)">npx</button>
+    <button class="tab" onclick="showTab('npm', this)">npm global</button>
+    <button class="tab" onclick="showTab('brew', this)">Homebrew</button>
+  </div>
+
+  <div id="tab-npx" class="tab-panel active">
+    <div class="code-block">
+      <button class="code-copy" onclick="copy('npx mdcat README.md', this)">Copy</button>
+      <div><span class="prompt"># </span><span class="comment">No install — runs directly from npm registry</span></div>
+      <div><span class="prompt">$ </span><span class="c">npx mdcat README.md</span></div>
+    </div>
+  </div>
+
+  <div id="tab-npm" class="tab-panel">
+    <div class="code-block">
+      <button class="code-copy" onclick="copy('npm install -g mdcat', this)">Copy</button>
+      <div><span class="prompt"># </span><span class="comment">Install once, use everywhere</span></div>
+      <div><span class="prompt">$ </span><span class="c">npm install -g mdcat</span></div>
+      <div style="margin-top:.5rem"><span class="prompt">$ </span><span class="c">mdcat README.md</span></div>
+    </div>
+  </div>
+
+  <div id="tab-brew" class="tab-panel">
+    <div class="code-block">
+      <button class="code-copy" onclick="copy('brew install frankchan/tap/mdcat', this)">Copy</button>
+      <div><span class="prompt"># </span><span class="comment">macOS via Homebrew tap</span></div>
+      <div><span class="prompt">$ </span><span class="c">brew install frankchan/tap/mdcat</span></div>
+    </div>
+  </div>
+
+  <div style="margin-top:1.5rem;padding:1rem 1.25rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius)">
+    <p style="font-size:.85rem;color:var(--fg2)">
+      <strong style="color:var(--fg)">Requirements:</strong>
+      Node.js 18 or later. Works on macOS, Linux, and Windows (WSL).
+    </p>
+  </div>
+</section>
+
+<!-- ── Keyboard shortcuts ─────────────────────────────────────── -->
+<section id="keys">
+  <p class="section-label">Keyboard shortcuts</p>
+  <h2 class="section-title">Vim-style navigation</h2>
+  <p class="section-sub">Everything reachable from the home row.</p>
+
+  <div class="keys-grid">
+    <div class="key-row">
+      <div class="keys"><kbd>q</kbd></div>
+      <span class="key-desc">Quit</span>
+    </div>
+    <div class="key-row">
+      <div class="keys"><kbd>j</kbd><kbd>k</kbd></div>
+      <span class="key-desc">Scroll down / up one line</span>
+    </div>
+    <div class="key-row">
+      <div class="keys"><kbd>↑</kbd><kbd>↓</kbd></div>
+      <span class="key-desc">Scroll up / down one line</span>
+    </div>
+    <div class="key-row">
+      <div class="keys"><kbd>Space</kbd><kbd>b</kbd></div>
+      <span class="key-desc">Page down / page up</span>
+    </div>
+    <div class="key-row">
+      <div class="keys"><kbd>d</kbd><kbd>u</kbd></div>
+      <span class="key-desc">Half-page down / up</span>
+    </div>
+    <div class="key-row">
+      <div class="keys"><kbd>g</kbd><kbd>G</kbd></div>
+      <span class="key-desc">Jump to top / bottom</span>
+    </div>
+    <div class="key-row">
+      <div class="keys"><kbd>/</kbd></div>
+      <span class="key-desc">Enter search mode</span>
+    </div>
+    <div class="key-row">
+      <div class="keys"><kbd>n</kbd><kbd>N</kbd></div>
+      <span class="key-desc">Next / previous match</span>
+    </div>
+    <div class="key-row">
+      <div class="keys"><kbd>Esc</kbd></div>
+      <span class="key-desc">Cancel search / clear matches</span>
+    </div>
+    <div class="key-row">
+      <div class="keys">🖱</div>
+      <span class="key-desc">Mouse wheel scrolls 3 lines</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ────────────────────────────────────────────────── -->
+<footer>
+  <p>
+    <strong style="color:var(--fg)">mdcat</strong> is open source —
+    <a href="https://github.com/frankchan/mdcat" target="_blank">GitHub</a> ·
+    <a href="https://www.npmjs.com/package/mdcat" target="_blank">npm</a> ·
+    MIT License
+  </p>
+</footer>
+
+<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function copy(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1800);
+    });
+  }
+</script>
+</body>
+</html>
