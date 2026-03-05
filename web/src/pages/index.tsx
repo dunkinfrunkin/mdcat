@@ -156,7 +156,7 @@ export default function Home(): ReactNode {
             <div className={styles.heroInstall}>
               <div className={styles.installBox}>
                 <span className={styles.installPrompt}>$</span>
-                <code className={styles.installCode}>npx @dunkinfrunkin/mdcat README.md</code>
+                <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
               </div>
             </div>
 
@@ -260,7 +260,7 @@ export default function Home(): ReactNode {
           </p>
           <div className={styles.ctaBox}>
             <span className={styles.installPrompt}>$</span>
-            <code className={styles.installCode}>npx @dunkinfrunkin/mdcat README.md</code>
+            <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
           </div>
           <div className={styles.ctaButtons}>
             <Link className={clsx('button button--primary button--lg', styles.heroPrimary)}
