@@ -16,11 +16,7 @@ const purple = s => `${E}[38;2;198;120;221m${s}${E}[0m`;
 const gray   = s => `${E}[38;2;92;99;112m${s}${E}[0m`;
 const bold   = s => `${E}[1m${s}${E}[0m`;
 
-const CAT = [
-  `  ${gray("/\\_/\\")}  `,
-  ` ${gray("(")} ${blue("o")}${gray(".")}${blue("o")} ${gray(")")} `,
-  ` ${gray("=(")} ${purple("^")} ${gray(")=")} `,
-].join("\n");
+const CAT = `  ${gray("/\\")}${blue("(o.o)")}${gray("/\\")}  `;
 
 const args = process.argv.slice(2);
 

@@ -11,11 +11,9 @@ import styles from './index.module.css';
 
 function AsciiCat({className}: {className?: string}) {
   return (
-    <pre className={clsx(styles.asciiCat, className)} aria-hidden>
-      <span className={styles.catGray}>{`  /\\_/\\  `}</span>{'\n'}
-      <span className={styles.catGray}>{` ( `}</span><span className={styles.catBlue}>o</span><span className={styles.catGray}>.</span><span className={styles.catBlue}>o</span><span className={styles.catGray}>{` ) `}</span>{'\n'}
-      <span className={styles.catGray}>{` =( `}</span><span className={styles.catPurple}>^</span><span className={styles.catGray}>{` )= `}</span>
-    </pre>
+    <span className={clsx(styles.asciiCat, className)} aria-hidden>
+      <span className={styles.catGray}>/\</span><span className={styles.catBlue}>(o.o)</span><span className={styles.catGray}>/\</span>
+    </span>
   );
 }
 
@@ -33,7 +31,7 @@ function TerminalDemo() {
       <div className={styles.terminalChrome}>
         <span className={styles.tcBadge}>[md]</span>
         <span className={styles.tcFile}>README.md</span>
-        <span className={styles.tcCat}>{`/\\_/\\ (o.o) =(^)=`}</span>
+        <span className={styles.tcCat}>/\<span className={styles.catBlue}>(o.o)</span>/\</span>
         <span className={styles.tcApp}>mdcat</span>
       </div>
       <div className={styles.terminalBody}>
