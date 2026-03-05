@@ -15,6 +15,7 @@ brew install frankchan/tap/mdcat
 
 ```sh
 mdcat README.md
+mdcat --web README.md        # open in browser
 cat CHANGELOG.md | mdcat
 curl -s https://raw.githubusercontent.com/user/repo/main/README.md | mdcat
 ```

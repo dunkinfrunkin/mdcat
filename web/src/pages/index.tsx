@@ -73,9 +73,9 @@ function TerminalDemo() {
 /* ── Install tabs ── */
 
 const INSTALL_TABS = [
-  {label: 'npx', code: 'npx @dunkinfrunkin/mdcat README.md'},
-  {label: 'npm', code: 'npm install -g @dunkinfrunkin/mdcat\nmdcat README.md'},
-  {label: 'brew', code: 'brew install frankchan/tap/mdcat\nmdcat README.md'},
+  {label: 'npx', code: 'npx @dunkinfrunkin/mdcat README.md\nnpx @dunkinfrunkin/mdcat --web README.md'},
+  {label: 'npm', code: 'npm install -g @dunkinfrunkin/mdcat\nmdcat README.md\nmdcat --web README.md'},
+  {label: 'brew', code: 'brew install frankchan/tap/mdcat\nmdcat README.md\nmdcat --web README.md'},
 ];
 
 /* ── Features ── */
