@@ -212,10 +212,10 @@ export default function Home(): ReactNode {
           <div className={styles.installCmdWrap}>
             <div className={styles.installBox}>
               <span className={styles.installPrompt}>$</span>
-              <code className={styles.installCode}>npx @dunkinfrunkin/mdcat README.md</code>
+              <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
             </div>
             <p className={styles.installAlt}>
-              Or install globally: <code>npm i -g @dunkinfrunkin/mdcat</code>
+              Zero-install: <code>npx @dunkinfrunkin/mdcat README.md</code>
             </p>
           </div>
         </div>
