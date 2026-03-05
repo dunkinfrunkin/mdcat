@@ -22,9 +22,9 @@ function AsciiCat({className}: {className?: string}) {
 function PanelHeadings() {
   return <>
     <div className={styles.tuiH1}>
-      <span className={styles.h1Box}>╔══════════════════╗</span>
+      <span className={styles.h1Box}>╔═════════════════╗</span>
       <span className={styles.h1Box}>║&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MDCAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║</span>
-      <span className={styles.h1Box}>╚══════════════════╝</span>
+      <span className={styles.h1Box}>╚═════════════════╝</span>
     </div>
     <div className={styles.tuiH2}><span className={styles.h2Text}>## Heading 2</span><br/><span className={styles.h2Bar}>──────────────────────</span></div>
     <div className={styles.tuiH3}>### Heading 3</div>
