@@ -190,11 +190,9 @@ export function launch(title, lines) {
   // ─── Chrome helpers ────────────────────────────────────────────────────────
 
   function topBar(title, w) {
-    const ext   = /\.(md|markdown|mdx)$/i.test(title) ? "md" : "~";
-    const badge = `${C.badge}[${ext}]${RESET}${C.chromeBg}`;
-    const left  = ` ${badge} ${C.bold}${C.titleFg}${title}${RESET}${C.chromeBg}`;
+    const left  = ` ${C.bold}${C.titleFg}${title}${RESET}${C.chromeBg}`;
     const cat   = `${C.dimFg}/\\${RESET}${C.chromeBg}${C.accentFg}(o.o)${RESET}${C.chromeBg}${C.dimFg}/\\ mdcat ${RESET}`;
-    const leftW = 1 + ext.length + 2 + 1 + title.length + 1;
+    const leftW = 1 + title.length;
     const rightW = "/\\(o.o)/\\ mdcat ".length;
     const gap   = Math.max(0, w - leftW - rightW);
     return `${C.chromeBg}${left}${C.dimFg}${" ".repeat(gap)}${cat}${RESET}`;
