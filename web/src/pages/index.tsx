@@ -133,6 +133,7 @@ const KEYS = [
 export default function Home(): ReactNode {
   return (
     <Layout title="mdcat — markdown pager for your terminal" description="View markdown files beautifully in your terminal. Zero config, One Dark colours, incremental search, mouse support.">
+    <div className={styles.pageWrap}>
 
       {/* ── Hero ── */}
       <section className={styles.hero}>
@@ -178,6 +179,8 @@ export default function Home(): ReactNode {
         </div>
       </section>
 
+      <div className={styles.divider} />
+
       {/* ── Features ── */}
       <section className={styles.features}>
         <div className="container">
@@ -201,6 +204,8 @@ export default function Home(): ReactNode {
         </div>
       </section>
 
+
+      <div className={styles.divider} />
 
       {/* ── Keyboard shortcuts ── */}
       <section className={styles.keyboard}>
@@ -230,6 +235,8 @@ export default function Home(): ReactNode {
         </div>
       </section>
 
+      <div className={styles.divider} />
+
       {/* ── CTA ── */}
       <section className={styles.cta}>
         <div className={styles.ctaInner}>
@@ -256,6 +263,7 @@ export default function Home(): ReactNode {
         </div>
       </section>
 
+    </div>
     </Layout>
   );
 }

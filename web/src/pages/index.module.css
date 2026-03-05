@@ -1,3 +1,22 @@
+/* ── Page flow ── */
+
+.pageWrap {
+  position: relative;
+}
+
+.pageWrap::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 100vh;
+  background: radial-gradient(ellipse at 50% 0%, var(--mc-glow-strong) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* ── Shared section layout ── */
 
 .sectionHeader {
@@ -12,7 +31,7 @@
   font-weight: 700;
   color: var(--ifm-color-primary);
   margin-bottom: 0.5rem;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .sectionTitle {
@@ -23,7 +42,7 @@
 }
 
 .sectionSubtitle {
-  color: var(--ifm-color-emphasis-600);
+  color: var(--ifm-color-emphasis-500);
   font-size: 1.05rem;
   margin-bottom: 0;
   line-height: 1.6;
@@ -63,7 +82,7 @@
 /* ── Hero ── */
 
 .hero {
-  padding: 6rem 2rem 5rem;
+  padding: 7rem 2rem 6rem;
   position: relative;
   overflow: hidden;
 }
@@ -73,9 +92,9 @@
   top: -200px;
   left: 50%;
   transform: translateX(-50%);
-  width: 800px;
-  height: 600px;
-  background: radial-gradient(ellipse, var(--mc-glow-strong), transparent 70%);
+  width: 900px;
+  height: 700px;
+  background: radial-gradient(ellipse, var(--mc-glow-strong), transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
@@ -91,13 +110,9 @@
   z-index: 1;
 }
 
-.heroLeft {
-  min-width: 0;
-}
+.heroLeft { min-width: 0; }
 
-.heroBadge {
-  margin-bottom: 1.25rem;
-}
+.heroBadge { margin-bottom: 1.25rem; }
 
 .heroBadgeText {
   font-family: var(--ifm-font-family-monospace);
@@ -123,25 +138,21 @@
   max-width: 480px;
 }
 
-.heroInstall {
-  margin-bottom: 1.75rem;
-}
+.heroInstall { margin-bottom: 1.75rem; }
 
 .installBox {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.7rem 1.25rem;
-  background: var(--mc-surface);
+  padding: 0.75rem 1.25rem;
+  background: rgba(0,0,0,0.2);
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 10px;
   transition: border-color 0.2s;
   cursor: text;
 }
 
-.installBox:hover {
-  border-color: var(--ifm-color-primary-light);
-}
+.installBox:hover { border-color: var(--ifm-color-primary-light); }
 
 .installPrompt {
   font-family: var(--ifm-font-family-monospace);
@@ -181,7 +192,7 @@
 }
 
 .heroSecondary {
-  background: var(--mc-surface) !important;
+  background: rgba(0,0,0,0.15) !important;
   color: var(--ifm-color-emphasis-800) !important;
   border: 1px solid var(--ifm-color-emphasis-200) !important;
   border-radius: 10px !important;
@@ -195,9 +206,7 @@
   color: var(--ifm-color-emphasis-900) !important;
 }
 
-.heroRight {
-  min-width: 0;
-}
+.heroRight { min-width: 0; }
 
 /* ── Terminal mockup ── */
 
@@ -209,7 +218,7 @@
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.78rem;
   line-height: 1.5;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(97,175,239,0.06);
 }
 
 .terminalBar {
@@ -242,29 +251,10 @@
   gap: 0.5rem;
 }
 
-.tcBadge {
-  color: #c678dd;
-  font-weight: 600;
-}
-
-.tcFile {
-  color: #fff;
-  font-weight: 600;
-  flex: 1;
-}
-
-.tcCat {
-  color: #3e4451;
-  font-size: 0.65rem;
-  flex: 1;
-  text-align: center;
-  letter-spacing: 0.05em;
-}
-
-.tcApp {
-  color: #5c6370;
-  font-size: 0.72rem;
-}
+.tcBadge { color: #c678dd; font-weight: 600; }
+.tcFile  { color: #fff; font-weight: 600; flex: 1; }
+.tcCat   { color: #3e4451; font-size: 0.65rem; flex: 1; text-align: center; letter-spacing: 0.05em; }
+.tcApp   { color: #5c6370; font-size: 0.72rem; }
 
 .terminalBody {
   padding: 0.75rem 0.85rem;
@@ -272,39 +262,12 @@
   min-height: 220px;
 }
 
-.tuiH1 {
-  display: flex;
-  flex-direction: column;
-  color: #c678dd;
-  margin-bottom: 0.75rem;
-  line-height: 1.3;
-}
-
-.h1Box {
-  display: block;
-  white-space: pre;
-}
-
-.tuiPara {
-  color: #abb2bf;
-  margin-bottom: 0.75rem;
-  font-size: 0.76rem;
-}
-
-.tuiH2 {
-  margin-bottom: 0.5rem;
-}
-
-.h2Text {
-  color: #61afef;
-  font-weight: 700;
-}
-
-.h2Bar {
-  color: #61afef;
-  opacity: 0.4;
-  font-size: 0.7rem;
-}
+.tuiH1 { display: flex; flex-direction: column; color: #c678dd; margin-bottom: 0.75rem; line-height: 1.3; }
+.h1Box { display: block; white-space: pre; }
+.tuiPara { color: #abb2bf; margin-bottom: 0.75rem; font-size: 0.76rem; }
+.tuiH2 { margin-bottom: 0.5rem; }
+.h2Text { color: #61afef; font-weight: 700; }
+.h2Bar { color: #61afef; opacity: 0.4; font-size: 0.7rem; }
 
 .tuiList {
   color: #abb2bf;
@@ -329,36 +292,12 @@
   margin-left: 0.25rem;
 }
 
-.tuiHr {
-  color: #3e4451;
-  margin-bottom: 0.5rem;
-  font-size: 0.7rem;
-}
-
-.tuiCodeTop, .tuiCodeBot {
-  color: #3e4451;
-  font-size: 0.72rem;
-}
-
-.codeLang {
-  color: #61afef;
-  opacity: 0.7;
-}
-
-.tuiCodeLine {
-  color: #abb2bf;
-  font-size: 0.74rem;
-  padding: 0 0.25rem;
-}
-
-.codePrompt {
-  color: #98c379;
-  margin-right: 0.3rem;
-}
-
-.codeText {
-  color: #abb2bf;
-}
+.tuiHr { color: #3e4451; margin-bottom: 0.5rem; font-size: 0.7rem; }
+.tuiCodeTop, .tuiCodeBot { color: #3e4451; font-size: 0.72rem; }
+.codeLang { color: #61afef; opacity: 0.7; }
+.tuiCodeLine { color: #abb2bf; font-size: 0.74rem; padding: 0 0.25rem; }
+.codePrompt { color: #98c379; margin-right: 0.3rem; }
+.codeText { color: #abb2bf; }
 
 .terminalStatus {
   display: flex;
@@ -368,32 +307,37 @@
   font-size: 0.68rem;
 }
 
-.tsHints {
-  color: #5c6370;
-}
+.tsHints { color: #5c6370; }
+.tsPct   { color: #5c6370; }
 
-.tsPct {
-  color: #5c6370;
+/* ── Divider ── */
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--ifm-color-emphasis-200) 20%, var(--ifm-color-emphasis-200) 80%, transparent);
+  margin: 0;
 }
 
 /* ── Features ── */
 
 .features {
   padding: 6rem 2rem;
-  background: var(--mc-surface);
+  position: relative;
 }
 
 .featuresGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .featureCard {
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 14px;
   padding: 1.5rem;
-  background: var(--ifm-background-color);
+  background: rgba(0,0,0,0.15);
+  backdrop-filter: blur(4px);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   display: flex;
   flex-direction: column;
@@ -405,91 +349,66 @@
   transform: translateY(-3px);
 }
 
-.featureIcon {
-  font-size: 1.5rem;
-  margin-bottom: 0.75rem;
-}
+.featureIcon { font-size: 1.4rem; margin-bottom: 0.75rem; }
 
 .featureTitle {
   font-family: var(--ifm-font-family-monospace);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   color: var(--ifm-color-emphasis-900);
 }
 
 .featureDesc {
-  font-size: 0.875rem;
-  color: var(--ifm-color-emphasis-600);
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-500);
   line-height: 1.55;
   margin-bottom: 1rem;
   flex: 1;
 }
 
 .featureCode {
-  background: var(--ifm-color-emphasis-100);
+  background: rgba(0,0,0,0.25);
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 8px;
-  padding: 0.75rem 1rem;
-  font-size: 0.76rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.75rem;
   line-height: 1.5;
   margin: 0;
   overflow-x: auto;
-  color: var(--ifm-color-emphasis-700);
+  color: var(--ifm-color-emphasis-600);
   white-space: pre;
   font-family: var(--ifm-font-family-monospace);
-}
-
-/* ── Install ── */
-
-.install {
-  padding: 6rem 2rem;
-}
-
-.installCmdWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.installAlt {
-  font-size: 0.875rem;
-  color: var(--ifm-color-emphasis-500);
-  margin: 0;
 }
 
 /* ── Keyboard ── */
 
 .keyboard {
   padding: 6rem 2rem;
-  background: var(--mc-surface);
+  position: relative;
 }
 
 .keyGrid {
-  max-width: 640px;
+  max-width: 600px;
   margin: 0 auto;
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 14px;
   overflow: hidden;
+  background: rgba(0,0,0,0.15);
+  backdrop-filter: blur(4px);
 }
 
 .keyRow {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  padding: 0.65rem 1.25rem;
+  padding: 0.6rem 1.25rem;
   border-bottom: 1px solid var(--ifm-color-emphasis-200);
   transition: background 0.15s;
 }
 
-.keyRow:last-child {
-  border-bottom: none;
-}
-
-.keyRow:hover {
-  background: var(--mc-surface-hover);
-}
+.keyRow:last-child { border-bottom: none; }
+.keyRow:hover { background: var(--mc-surface-hover); }
 
 .keyBadge {
   display: flex;
@@ -503,29 +422,22 @@
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.78rem;
   font-weight: 600;
-  background: var(--ifm-color-emphasis-100);
+  background: rgba(0,0,0,0.25);
   border: 1px solid var(--ifm-color-emphasis-300);
   border-bottom-width: 2px;
   border-radius: 5px;
   padding: 0.1rem 0.45rem;
-  color: var(--ifm-color-emphasis-800);
+  color: var(--ifm-color-primary);
 }
 
-.keySep {
-  color: var(--ifm-color-emphasis-400);
-  font-size: 0.8rem;
-  margin: 0 0.15rem;
-}
-
-.keyAction {
-  font-size: 0.875rem;
-  color: var(--ifm-color-emphasis-700);
-}
+.keySep { color: var(--ifm-color-emphasis-400); font-size: 0.8rem; margin: 0 0.15rem; }
+.keyAction { font-size: 0.875rem; color: var(--ifm-color-emphasis-600); }
 
 /* ── CTA ── */
 
 .cta {
-  padding: 6rem 2rem;
+  padding: 7rem 2rem;
+  position: relative;
 }
 
 .ctaInner {
@@ -543,7 +455,7 @@
 
 .ctaSubtitle {
   font-size: 1.05rem;
-  color: var(--ifm-color-emphasis-600);
+  color: var(--ifm-color-emphasis-500);
   line-height: 1.6;
   margin-bottom: 1.75rem;
 }
@@ -552,8 +464,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.7rem 1.25rem;
-  background: var(--mc-surface);
+  padding: 0.75rem 1.25rem;
+  background: rgba(0,0,0,0.2);
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 10px;
   margin-bottom: 1.75rem;
@@ -569,10 +481,7 @@
 /* ── Responsive ── */
 
 @media screen and (max-width: 996px) {
-  .heroInner {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-  }
+  .heroInner { grid-template-columns: 1fr; gap: 2.5rem; }
   .heroTitle { font-size: 3rem; }
   .heroGlow { width: 500px; height: 400px; }
   .featuresGrid { grid-template-columns: 1fr 1fr; }
