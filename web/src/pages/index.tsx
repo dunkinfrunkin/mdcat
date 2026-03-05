@@ -1,4 +1,4 @@
-import {type ReactNode, useState} from 'react';
+import {type ReactNode} from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
@@ -70,14 +70,6 @@ function TerminalDemo() {
   );
 }
 
-/* ── Install tabs ── */
-
-const INSTALL_TABS = [
-  {label: 'npx', code: 'npx @dunkinfrunkin/mdcat README.md\nnpx @dunkinfrunkin/mdcat --web README.md'},
-  {label: 'npm', code: 'npm install -g @dunkinfrunkin/mdcat\nmdcat README.md\nmdcat --web README.md'},
-  {label: 'brew', code: 'brew install frankchan/tap/mdcat\nmdcat README.md\nmdcat --web README.md'},
-];
-
 /* ── Features ── */
 
 const FEATURES = [
@@ -139,8 +131,6 @@ const KEYS = [
 /* ── Page ── */
 
 export default function Home(): ReactNode {
-  const [activeTab, setActiveTab] = useState(0);
-
   return (
     <Layout title="mdcat — markdown pager for your terminal" description="View markdown files beautifully in your terminal. Zero config, One Dark colours, incremental search, mouse support.">
 
@@ -217,23 +207,16 @@ export default function Home(): ReactNode {
           <div className={styles.sectionHeader}>
             <span className={styles.sectionCaret}>$</span>
             <Heading as="h2" className={styles.sectionTitle}>Install</Heading>
-            <p className={styles.sectionSubtitle}>
-              Zero-install with npx, or add it globally. Your choice.
-            </p>
+            <p className={styles.sectionSubtitle}>No install required. Just run it.</p>
           </div>
-          <div className={styles.installTabs}>
-            <div className={styles.tabBar}>
-              {INSTALL_TABS.map((t, i) => (
-                <button key={t.label}
-                  className={clsx(styles.tab, i === activeTab && styles.tabActive)}
-                  onClick={() => setActiveTab(i)}>
-                  {t.label}
-                </button>
-              ))}
+          <div className={styles.installCmdWrap}>
+            <div className={styles.installBox}>
+              <span className={styles.installPrompt}>$</span>
+              <code className={styles.installCode}>npx @dunkinfrunkin/mdcat README.md</code>
             </div>
-            <div className={styles.tabContent}>
-              <CodeBlock language="bash">{INSTALL_TABS[activeTab].code}</CodeBlock>
-            </div>
+            <p className={styles.installAlt}>
+              Or install globally: <code>npm i -g @dunkinfrunkin/mdcat</code>
+            </p>
           </div>
         </div>
       </section>

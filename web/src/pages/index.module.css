@@ -446,52 +446,17 @@
   padding: 6rem 2rem;
 }
 
-.installTabs {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.tabBar {
+.installCmdWrap {
   display: flex;
-  gap: 2px;
-  margin-bottom: -1px;
-  position: relative;
-  z-index: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
-.tab {
-  padding: 7px 18px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  border: 1px solid var(--ifm-color-emphasis-200);
-  border-bottom: none;
-  border-radius: 10px 10px 0 0;
-  background: var(--mc-surface);
-  color: var(--ifm-color-emphasis-600);
-  cursor: pointer;
-  font-family: var(--ifm-font-family-monospace);
-  transition: color 0.15s, background 0.15s;
-}
-
-.tab:hover {
-  color: var(--ifm-color-emphasis-800);
-  background: var(--mc-surface-hover);
-}
-
-.tabActive {
-  background: var(--ifm-pre-background);
-  color: var(--ifm-color-primary);
-  border-color: var(--ifm-color-emphasis-300);
-  font-weight: 700;
-}
-
-.tabContent {
-  position: relative;
-}
-
-.tabContent pre {
-  border-radius: 0 10px 10px 10px !important;
-  margin: 0 !important;
+.installAlt {
+  font-size: 0.875rem;
+  color: var(--ifm-color-emphasis-500);
+  margin: 0;
 }
 
 /* ── Keyboard ── */
