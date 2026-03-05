@@ -7,7 +7,7 @@
 **Terminal pager for Markdown.** Full colour, syntax highlighting, incremental search, mouse support — zero config.
 
 ```sh
-npx @dunkinfrunkin/mdcat README.md
+npm install -g @dunkinfrunkin/mdcat
 ```
 
 ---
@@ -15,14 +15,14 @@ npx @dunkinfrunkin/mdcat README.md
 ## Install
 
 ```sh
-# Zero-install
-npx @dunkinfrunkin/mdcat README.md
-
 # Global
 npm install -g @dunkinfrunkin/mdcat
 
 # Homebrew
 brew install frankchan/tap/mdcat
+
+# Zero-install
+npx @dunkinfrunkin/mdcat README.md
 ```
 
 ## Usage
