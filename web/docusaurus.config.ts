@@ -46,6 +46,12 @@ const config: Config = {
     },
     navbar: {
       title: 'mdcat',
+      logo: {
+        alt: 'mdcat',
+        src: 'img/favicon.svg',
+        width: 28,
+        height: 28,
+      },
       items: [
         {
           href: 'https://github.com/dunkinfrunkin/mdcat',

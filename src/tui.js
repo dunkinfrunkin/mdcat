@@ -1,3 +1,5 @@
+import { execFileSync } from "child_process";
+
 const ESC = "\x1B";
 const ALT_ON    = `${ESC}[?1049h`;
 const ALT_OFF   = `${ESC}[?1049l`;
@@ -99,6 +101,15 @@ function highlightInLine(line, query, isCurrent) {
   return out;
 }
 
+function copyText(text) {
+  // OSC 52 — works in iTerm2, Kitty, WezTerm, tmux (with allow-passthrough)
+  const b64 = Buffer.from(text).toString("base64");
+  process.stdout.write(`${ESC}]52;c;${b64}${ESC}\\`);
+  // pbcopy fallback for macOS
+  try { execFileSync("pbcopy", [], { input: text, stdio: ["pipe", "ignore", "ignore"] }); }
+  catch { /* not on macOS or pbcopy unavailable */ }
+}
+
 export function launch(title, lines) {
   // Viewport state
   let offset = 0;
@@ -109,6 +120,11 @@ export function launch(title, lines) {
   let matchLines  = [];         // sorted array of line indices with matches
   let matchSet    = new Set();  // for O(1) gutter lookup
   let matchIdx    = 0;
+
+  // Mouse / clipboard state
+  let mouseEnabled = true;
+  let toast        = "";        // brief status message
+  let toastTimer   = null;
 
   const rows    = () => process.stdout.rows    || 24;
   const cols    = () => process.stdout.columns || 80;
@@ -174,14 +190,12 @@ export function launch(title, lines) {
   // ─── Chrome helpers ────────────────────────────────────────────────────────
 
   function topBar(title, w) {
-    const ext   = /\.(md|markdown|mdx)$/i.test(title) ? "md" : "~";
-    const badge = `${C.badge}[${ext}]${RESET}${C.chromeBg}`;
-    const left  = ` ${badge} ${C.bold}${C.titleFg}${title}${RESET}${C.chromeBg}`;
-    const right = `${C.dimFg}mdcat ${RESET}`;
-    const leftW = 1 + ext.length + 2 + 1 + title.length + 1;
-    const rightW = "mdcat ".length;
+    const left  = ` ${C.bold}${C.titleFg}${title}${RESET}${C.chromeBg}`;
+    const cat   = `${C.dimFg}/\\${RESET}${C.chromeBg}${C.accentFg}(o.o)${RESET}${C.chromeBg}${C.dimFg}/\\ mdcat ${RESET}`;
+    const leftW = 1 + title.length;
+    const rightW = "/\\(o.o)/\\ mdcat ".length;
     const gap   = Math.max(0, w - leftW - rightW);
-    return `${C.chromeBg}${left}${C.dimFg}${" ".repeat(gap)}${right}${RESET}`;
+    return `${C.chromeBg}${left}${C.dimFg}${" ".repeat(gap)}${cat}${RESET}`;
   }
 
   function gutterFor(absLine) {
@@ -223,12 +237,32 @@ export function launch(title, lines) {
     // Normal mode
     const end   = Math.min(offset + visible(), lines.length);
     const pct   = lines.length === 0 ? "100%" : Math.round((end / lines.length) * 100) + "%";
-    const hints = `${C.dim} q  /  j k  ↑↓  space  g G${RESET}`;
-    const right = `${C.dimFg} ${pct} ${RESET}`;
-    const hintsW = " q  /  j k  ↑↓  space  g G".length;
+
+    if (toast) {
+      const toastStr = `${C.greenFg} ✔ ${toast}${RESET}`;
+      const right    = `${C.dimFg} ${pct} ${RESET}`;
+      const rightW   = ` ${pct} `.length;
+      const gap      = Math.max(0, w - (3 + toast.length) - rightW);
+      return `${C.chromeBg}${toastStr}${" ".repeat(gap)}${right}${RESET}`;
+    }
+
+    const mouseHint = mouseEnabled ? "" : `${C.matchFg} [select mode]${RESET}`;
+    const mouseW    = mouseEnabled ? 0 : " [select mode]".length;
+    const hints  = `${C.dim} q  y  /  j k  ↑↓  space  g G${RESET}`;
+    const right  = `${C.dimFg} ${pct} ${RESET}`;
+    const hintsW = " q  y  /  j k  ↑↓  space  g G".length;
     const rightW = ` ${pct} `.length;
-    const gap    = Math.max(0, w - hintsW - rightW);
-    return `${C.chromeBg}${hints}${" ".repeat(gap)}${right}${RESET}`;
+    const gap    = Math.max(0, w - hintsW - mouseW - rightW);
+    return `${C.chromeBg}${hints}${mouseHint}${" ".repeat(gap)}${right}${RESET}`;
+  }
+
+  // ─── Toast ─────────────────────────────────────────────────────────────────
+
+  function showToast(msg, ms = 1500) {
+    toast = msg;
+    draw();
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast = ""; draw(); }, ms);
   }
 
   // ─── Cleanup ───────────────────────────────────────────────────────────────
@@ -301,6 +335,17 @@ export function launch(title, lines) {
 
       case "g": offset = 0;        break;
       case "G": offset = maxOff(); break;
+
+      case "y": {
+        const text = lines.slice(offset, offset + visible()).map(plain).join("\n");
+        copyText(text);
+        showToast("Copied to clipboard"); return;
+      }
+
+      case "M":
+        mouseEnabled = !mouseEnabled;
+        process.stdout.write(mouseEnabled ? MOUSE_ON : MOUSE_OFF);
+        showToast(mouseEnabled ? "Mouse scroll on" : "Mouse off — select text freely"); return;
 
       case "/": case "\x06": // Ctrl+F
         mode = "search"; searchQuery = ""; matchLines = []; matchSet = new Set();

@@ -1,4 +1,4 @@
-import {type ReactNode, useState} from 'react';
+import {type ReactNode, useState, useEffect, useRef} from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
@@ -7,49 +7,150 @@ import CodeBlock from '@theme/CodeBlock';
 
 import styles from './index.module.css';
 
+/* ── ASCII cat ── */
+
+function AsciiCat({className}: {className?: string}) {
+  return (
+    <span className={clsx(styles.asciiCat, className)} aria-hidden>
+      <span className={styles.catGray}>/\</span><span className={styles.catBlue}>(o.o)</span><span className={styles.catGray}>/\</span>
+    </span>
+  );
+}
+
+/* ── Terminal tab content panels ── */
+
+function PanelHeadings() {
+  return <>
+    <div className={styles.tuiH1}>
+      <span className={styles.h1Box}>╔═════════════════╗</span>
+      <span className={styles.h1Box}>║&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MDCAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║</span>
+      <span className={styles.h1Box}>╚═════════════════╝</span>
+    </div>
+    <div className={styles.tuiH2}><span className={styles.h2Text}>## Heading 2</span><br/><span className={styles.h2Bar}>──────────────────────</span></div>
+    <div className={styles.tuiH3}>### Heading 3</div>
+    <div className={styles.tuiH4}>#### Heading 4</div>
+    <div className={styles.tuiH5}>##### Heading 5</div>
+    <div className={styles.tuiPara}>
+      <span className={styles.inlineBold}>bold</span>{'  '}
+      <span className={styles.inlineItalic}>italic</span>{'  '}
+      <span className={styles.inlineCode}>`code`</span>{'  '}
+      <span className={styles.inlineStrike}>~~strike~~</span>
+    </div>
+  </>;
+}
+
+function PanelCode() {
+  return <>
+    <div className={styles.tuiH2}><span className={styles.h2Text}>Code blocks</span><br/><span className={styles.h2Bar}>──────────────────────</span></div>
+    <div className={styles.tuiCodeTop}>┌─ <span className={styles.codeLang}>javascript</span> ────────┐</div>
+    <div className={styles.tuiCodeLine}>│ <span className={styles.codeKw}>const</span> <span className={styles.codeVar}>greet</span> <span className={styles.codePunct}>=</span> <span className={styles.codeStr}>'hello'</span></div>
+    <div className={styles.tuiCodeLine}>│ <span className={styles.codeKw}>function</span> <span className={styles.codeFn}>run</span><span className={styles.codePunct}>()</span> {'{'}</div>
+    <div className={styles.tuiCodeLine}>│&nbsp;&nbsp; console<span className={styles.codePunct}>.</span><span className={styles.codeFn}>log</span><span className={styles.codePunct}>(</span><span className={styles.codeVar}>greet</span><span className={styles.codePunct}>)</span></div>
+    <div className={styles.tuiCodeLine}>│ {'}'}</div>
+    <div className={styles.tuiCodeBot}>└───────────────────────┘</div>
+    <br/>
+    <div className={styles.tuiCodeTop}>┌─ <span className={styles.codeLang}>bash</span> ──────────────────┐</div>
+    <div className={styles.tuiCodeLine}>│ <span className={styles.codePrompt}>$</span> <span className={styles.codeText}>npm i -g @dunkinfrunkin/mdcat</span></div>
+    <div className={styles.tuiCodeBot}>└───────────────────────────────┘</div>
+  </>;
+}
+
+function PanelTable() {
+  return <>
+    <div className={styles.tuiH2}><span className={styles.h2Text}>Tables</span><br/><span className={styles.h2Bar}>──────────────────────</span></div>
+    <div className={styles.tuiTable}>
+      <div className={styles.tuiTableRow + ' ' + styles.tuiTableHead}>
+        <span className={styles.tuiTh}>╔══════════╦═════════╦═══════╗</span>
+      </div>
+      <div className={styles.tuiTableRow + ' ' + styles.tuiTableHead}>
+        <span className={styles.tuiTh}>║ <span className={styles.tuiThText}>Name</span>     ║ <span className={styles.tuiThText}>Type</span>    ║ <span className={styles.tuiThText}>Size</span> ║</span>
+      </div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiBorder}>╠══════════╬═════════╬═══════╣</span></div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiTd}>║ cli.js   ║ <span className={styles.tuiGreen}>module</span>  ║ <span className={styles.tuiBlue}>1.6kB</span> ║</span></div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiTd}>║ render.js║ <span className={styles.tuiGreen}>module</span>  ║ <span className={styles.tuiBlue}>16kB</span>  ║</span></div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiTd}>║ tui.js   ║ <span className={styles.tuiGreen}>module</span>  ║ <span className={styles.tuiBlue}>13kB</span>  ║</span></div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiBorder}>╚══════════╩═════════╩═══════╝</span></div>
+    </div>
+  </>;
+}
+
+function PanelLists() {
+  return <>
+    <div className={styles.tuiH2}><span className={styles.h2Text}>Lists &amp; tasks</span><br/><span className={styles.h2Bar}>──────────────────────</span></div>
+    <div className={styles.tuiList}>
+      <div><span className={styles.bullet1}>●</span> Unordered item</div>
+      <div>&nbsp;&nbsp;<span className={styles.bullet2}>○</span> Nested item</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span className={styles.bullet3}>‣</span> Deeply nested</div>
+    </div>
+    <div className={styles.tuiHr}>──────────────────────────────────</div>
+    <div className={styles.tuiList}>
+      <div><span className={styles.tuiCheck}>☑</span> <span className={styles.tuiCheckDone}>Ship mdcat v1.0</span></div>
+      <div><span className={styles.tuiCheck}>☑</span> <span className={styles.tuiCheckDone}>Add search</span></div>
+      <div><span className={styles.tuiUncheck}>☐</span> World domination</div>
+    </div>
+    <div className={styles.tuiHr}>──────────────────────────────────</div>
+    <div className={styles.tuiList}>
+      <div><span className={styles.tuiOl}>1.</span> First item</div>
+      <div><span className={styles.tuiOl}>2.</span> Second item</div>
+      <div><span className={styles.tuiOl}>3.</span> Third item</div>
+    </div>
+  </>;
+}
+
 /* ── Terminal mockup ── */
 
+const DEMO_TABS = [
+  {label: 'headings', file: 'headings.md', Panel: PanelHeadings},
+  {label: 'code',     file: 'code.md',     Panel: PanelCode},
+  {label: 'tables',   file: 'table.md',    Panel: PanelTable},
+  {label: 'lists',    file: 'lists.md',    Panel: PanelLists},
+];
+
 function TerminalDemo() {
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const pauseRef = useRef(false);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!pauseRef.current) {
+        setActive(i => (i + 1) % DEMO_TABS.length);
+      }
+    }, 2800);
+    return () => clearInterval(id);
+  }, []);
+
+  function pick(i: number) {
+    setActive(i);
+    setPaused(true);
+    pauseRef.current = true;
+  }
+
+  const {file, Panel} = DEMO_TABS[active];
+
   return (
     <div className={styles.terminal}>
       <div className={styles.terminalBar}>
         <span className={styles.terminalDot} style={{background: '#e06c75'}} />
         <span className={styles.terminalDot} style={{background: '#e5c07b'}} />
         <span className={styles.terminalDot} style={{background: '#98c379'}} />
-        <span className={styles.terminalTitle}>mdcat — README.md</span>
+        <div className={styles.demoTabs}>
+          {DEMO_TABS.map((t, i) => (
+            <button key={t.label}
+              className={clsx(styles.demoTab, i === active && styles.demoTabActive)}
+              onClick={() => pick(i)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className={styles.terminalChrome}>
-        <span className={styles.tcBadge}>[md]</span>
-        <span className={styles.tcFile}>README.md</span>
+        <span className={styles.tcFile}>{file}</span>
+        <span className={styles.tcCat}>/\<span className={styles.catBlue}>(o.o)</span>/\</span>
         <span className={styles.tcApp}>mdcat</span>
       </div>
-      <div className={styles.terminalBody}>
-        <div className={styles.tuiH1}>
-          <span className={styles.h1Box}>╔══════════════════╗</span>
-          <span className={styles.h1Box}>║&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MDCAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║</span>
-          <span className={styles.h1Box}>╚══════════════════╝</span>
-        </div>
-        <div className={styles.tuiPara}>
-          View markdown files beautifully
-          <br />in your terminal.
-        </div>
-        <div className={styles.tuiH2}>
-          <span className={styles.h2Text}>Features</span>
-          <br />
-          <span className={styles.h2Bar}>──────────────────────────</span>
-        </div>
-        <div className={styles.tuiList}>
-          <div><span className={styles.bullet1}>●</span> Zero configuration</div>
-          <div><span className={styles.bullet2}>○</span> One Dark colour palette</div>
-          <div><span className={styles.bullet3}>‣</span> Incremental search <span className={styles.kbd}>/</span></div>
-          <div><span className={styles.bullet1}>●</span> Mouse wheel scrolling</div>
-          <div><span className={styles.bullet2}>○</span> OSC 8 clickable links</div>
-          <div><span className={styles.bullet3}>‣</span> GFM tables &amp; task lists</div>
-        </div>
-        <div className={styles.tuiHr}>──────────────────────────────────</div>
-        <div className={styles.tuiCodeTop}>┌─ <span className={styles.codeLang}>bash</span> ──────────────────┐</div>
-        <div className={styles.tuiCodeLine}>│ <span className={styles.codePrompt}>$</span> <span className={styles.codeText}>npx @dunkinfrunkin/mdcat README.md</span></div>
-        <div className={styles.tuiCodeBot}>└───────────────────────────────────┘</div>
+      <div key={active} className={styles.terminalBody}>
+        <Panel />
       </div>
       <div className={styles.terminalStatus}>
         <span className={styles.tsHints}> q&nbsp;&nbsp;/&nbsp;&nbsp;j k&nbsp;&nbsp;↑↓&nbsp;&nbsp;space&nbsp;&nbsp;g G</span>
@@ -58,14 +159,6 @@ function TerminalDemo() {
     </div>
   );
 }
-
-/* ── Install tabs ── */
-
-const INSTALL_TABS = [
-  {label: 'npx', code: 'npx @dunkinfrunkin/mdcat README.md'},
-  {label: 'npm', code: 'npm install -g @dunkinfrunkin/mdcat\nmdcat README.md'},
-  {label: 'brew', code: 'brew install frankchan/tap/mdcat\nmdcat README.md'},
-];
 
 /* ── Features ── */
 
@@ -112,6 +205,8 @@ const FEATURES = [
 
 const KEYS = [
   {key: 'q', action: 'Quit'},
+  {key: 'y', action: 'Copy visible page to clipboard'},
+  {key: 'M', action: 'Toggle mouse (off = free text selection)'},
   {key: 'j / k', action: 'Scroll down / up one line'},
   {key: '↑ / ↓', action: 'Scroll up / down one line'},
   {key: 'Space / b', action: 'Page down / page up'},
@@ -126,18 +221,20 @@ const KEYS = [
 /* ── Page ── */
 
 export default function Home(): ReactNode {
-  const [activeTab, setActiveTab] = useState(0);
-
   return (
     <Layout title="mdcat — markdown pager for your terminal" description="View markdown files beautifully in your terminal. Zero config, One Dark colours, incremental search, mouse support.">
+    <div className={styles.pageWrap}>
 
       {/* ── Hero ── */}
       <section className={styles.hero}>
         <div className={styles.heroGlow} />
         <div className={styles.heroInner}>
           <div className={styles.heroLeft}>
-            <div className={styles.heroBadge}>
-              <span className={styles.heroBadgeText}>terminal · markdown · pager</span>
+            <div className={styles.heroCatRow}>
+              <AsciiCat />
+              <div className={styles.heroBadge}>
+                <span className={styles.heroBadgeText}>terminal · markdown · pager</span>
+              </div>
             </div>
             <Heading as="h1" className={styles.heroTitle}>
               <span className={styles.heroGradient}>mdcat</span>
@@ -150,7 +247,7 @@ export default function Home(): ReactNode {
             <div className={styles.heroInstall}>
               <div className={styles.installBox}>
                 <span className={styles.installPrompt}>$</span>
-                <code className={styles.installCode}>npx @dunkinfrunkin/mdcat README.md</code>
+                <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
               </div>
             </div>
 
@@ -171,6 +268,8 @@ export default function Home(): ReactNode {
           </div>
         </div>
       </section>
+
+      <div className={styles.divider} />
 
       {/* ── Features ── */}
       <section className={styles.features}>
@@ -195,32 +294,8 @@ export default function Home(): ReactNode {
         </div>
       </section>
 
-      {/* ── Install ── */}
-      <section className={styles.install}>
-        <div className="container">
-          <div className={styles.sectionHeader}>
-            <span className={styles.sectionCaret}>$</span>
-            <Heading as="h2" className={styles.sectionTitle}>Install</Heading>
-            <p className={styles.sectionSubtitle}>
-              Zero-install with npx, or add it globally. Your choice.
-            </p>
-          </div>
-          <div className={styles.installTabs}>
-            <div className={styles.tabBar}>
-              {INSTALL_TABS.map((t, i) => (
-                <button key={t.label}
-                  className={clsx(styles.tab, i === activeTab && styles.tabActive)}
-                  onClick={() => setActiveTab(i)}>
-                  {t.label}
-                </button>
-              ))}
-            </div>
-            <div className={styles.tabContent}>
-              <CodeBlock language="bash">{INSTALL_TABS[activeTab].code}</CodeBlock>
-            </div>
-          </div>
-        </div>
-      </section>
+
+      <div className={styles.divider} />
 
       {/* ── Keyboard shortcuts ── */}
       <section className={styles.keyboard}>
@@ -250,6 +325,8 @@ export default function Home(): ReactNode {
         </div>
       </section>
 
+      <div className={styles.divider} />
+
       {/* ── CTA ── */}
       <section className={styles.cta}>
         <div className={styles.ctaInner}>
@@ -261,7 +338,7 @@ export default function Home(): ReactNode {
           </p>
           <div className={styles.ctaBox}>
             <span className={styles.installPrompt}>$</span>
-            <code className={styles.installCode}>npx @dunkinfrunkin/mdcat README.md</code>
+            <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
           </div>
           <div className={styles.ctaButtons}>
             <Link className={clsx('button button--primary button--lg', styles.heroPrimary)}
@@ -276,6 +353,7 @@ export default function Home(): ReactNode {
         </div>
       </section>
 
+    </div>
     </Layout>
   );
 }
