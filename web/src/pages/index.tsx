@@ -1,4 +1,4 @@
-import {type ReactNode} from 'react';
+import {type ReactNode, useState} from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
@@ -17,50 +17,122 @@ function AsciiCat({className}: {className?: string}) {
   );
 }
 
+/* ── Terminal tab content panels ── */
+
+function PanelHeadings() {
+  return <>
+    <div className={styles.tuiH1}>
+      <span className={styles.h1Box}>╔══════════════════╗</span>
+      <span className={styles.h1Box}>║&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MDCAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║</span>
+      <span className={styles.h1Box}>╚══════════════════╝</span>
+    </div>
+    <div className={styles.tuiH2}><span className={styles.h2Text}>## Heading 2</span><br/><span className={styles.h2Bar}>──────────────────────</span></div>
+    <div className={styles.tuiH3}>### Heading 3</div>
+    <div className={styles.tuiH4}>#### Heading 4</div>
+    <div className={styles.tuiH5}>##### Heading 5</div>
+    <div className={styles.tuiPara}>
+      <span className={styles.inlineBold}>bold</span>{'  '}
+      <span className={styles.inlineItalic}>italic</span>{'  '}
+      <span className={styles.inlineCode}>`code`</span>{'  '}
+      <span className={styles.inlineStrike}>~~strike~~</span>
+    </div>
+  </>;
+}
+
+function PanelCode() {
+  return <>
+    <div className={styles.tuiH2}><span className={styles.h2Text}>Code blocks</span><br/><span className={styles.h2Bar}>──────────────────────</span></div>
+    <div className={styles.tuiCodeTop}>┌─ <span className={styles.codeLang}>javascript</span> ────────┐</div>
+    <div className={styles.tuiCodeLine}>│ <span className={styles.codeKw}>const</span> <span className={styles.codeVar}>greet</span> <span className={styles.codePunct}>=</span> <span className={styles.codeStr}>'hello'</span></div>
+    <div className={styles.tuiCodeLine}>│ <span className={styles.codeKw}>function</span> <span className={styles.codeFn}>run</span><span className={styles.codePunct}>()</span> {'{'}</div>
+    <div className={styles.tuiCodeLine}>│&nbsp;&nbsp; console<span className={styles.codePunct}>.</span><span className={styles.codeFn}>log</span><span className={styles.codePunct}>(</span><span className={styles.codeVar}>greet</span><span className={styles.codePunct}>)</span></div>
+    <div className={styles.tuiCodeLine}>│ {'}'}</div>
+    <div className={styles.tuiCodeBot}>└───────────────────────┘</div>
+    <br/>
+    <div className={styles.tuiCodeTop}>┌─ <span className={styles.codeLang}>bash</span> ──────────────────┐</div>
+    <div className={styles.tuiCodeLine}>│ <span className={styles.codePrompt}>$</span> <span className={styles.codeText}>npm i -g @dunkinfrunkin/mdcat</span></div>
+    <div className={styles.tuiCodeBot}>└───────────────────────────────┘</div>
+  </>;
+}
+
+function PanelTable() {
+  return <>
+    <div className={styles.tuiH2}><span className={styles.h2Text}>Tables</span><br/><span className={styles.h2Bar}>──────────────────────</span></div>
+    <div className={styles.tuiTable}>
+      <div className={styles.tuiTableRow + ' ' + styles.tuiTableHead}>
+        <span className={styles.tuiTh}>╔══════════╦═════════╦═══════╗</span>
+      </div>
+      <div className={styles.tuiTableRow + ' ' + styles.tuiTableHead}>
+        <span className={styles.tuiTh}>║ <span className={styles.tuiThText}>Name</span>     ║ <span className={styles.tuiThText}>Type</span>    ║ <span className={styles.tuiThText}>Size</span> ║</span>
+      </div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiBorder}>╠══════════╬═════════╬═══════╣</span></div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiTd}>║ cli.js   ║ <span className={styles.tuiGreen}>module</span>  ║ <span className={styles.tuiBlue}>1.6kB</span> ║</span></div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiTd}>║ render.js║ <span className={styles.tuiGreen}>module</span>  ║ <span className={styles.tuiBlue}>16kB</span>  ║</span></div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiTd}>║ tui.js   ║ <span className={styles.tuiGreen}>module</span>  ║ <span className={styles.tuiBlue}>13kB</span>  ║</span></div>
+      <div className={styles.tuiTableRow}><span className={styles.tuiBorder}>╚══════════╩═════════╩═══════╝</span></div>
+    </div>
+  </>;
+}
+
+function PanelLists() {
+  return <>
+    <div className={styles.tuiH2}><span className={styles.h2Text}>Lists &amp; tasks</span><br/><span className={styles.h2Bar}>──────────────────────</span></div>
+    <div className={styles.tuiList}>
+      <div><span className={styles.bullet1}>●</span> Unordered item</div>
+      <div>&nbsp;&nbsp;<span className={styles.bullet2}>○</span> Nested item</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span className={styles.bullet3}>‣</span> Deeply nested</div>
+    </div>
+    <div className={styles.tuiHr}>──────────────────────────────────</div>
+    <div className={styles.tuiList}>
+      <div><span className={styles.tuiCheck}>☑</span> <span className={styles.tuiCheckDone}>Ship mdcat v1.0</span></div>
+      <div><span className={styles.tuiCheck}>☑</span> <span className={styles.tuiCheckDone}>Add search</span></div>
+      <div><span className={styles.tuiUncheck}>☐</span> World domination</div>
+    </div>
+    <div className={styles.tuiHr}>──────────────────────────────────</div>
+    <div className={styles.tuiList}>
+      <div><span className={styles.tuiOl}>1.</span> First item</div>
+      <div><span className={styles.tuiOl}>2.</span> Second item</div>
+      <div><span className={styles.tuiOl}>3.</span> Third item</div>
+    </div>
+  </>;
+}
+
 /* ── Terminal mockup ── */
 
+const DEMO_TABS = [
+  {label: 'headings', file: 'headings.md', Panel: PanelHeadings},
+  {label: 'code',     file: 'code.md',     Panel: PanelCode},
+  {label: 'tables',   file: 'table.md',    Panel: PanelTable},
+  {label: 'lists',    file: 'lists.md',    Panel: PanelLists},
+];
+
 function TerminalDemo() {
+  const [active, setActive] = useState(0);
+  const {file, Panel} = DEMO_TABS[active];
+
   return (
     <div className={styles.terminal}>
       <div className={styles.terminalBar}>
         <span className={styles.terminalDot} style={{background: '#e06c75'}} />
         <span className={styles.terminalDot} style={{background: '#e5c07b'}} />
         <span className={styles.terminalDot} style={{background: '#98c379'}} />
-        <span className={styles.terminalTitle}>mdcat — README.md</span>
+        <div className={styles.demoTabs}>
+          {DEMO_TABS.map((t, i) => (
+            <button key={t.label}
+              className={clsx(styles.demoTab, i === active && styles.demoTabActive)}
+              onClick={() => setActive(i)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className={styles.terminalChrome}>
-        <span className={styles.tcBadge}>[md]</span>
-        <span className={styles.tcFile}>README.md</span>
+        <span className={styles.tcFile}>{file}</span>
         <span className={styles.tcCat}>/\<span className={styles.catBlue}>(o.o)</span>/\</span>
         <span className={styles.tcApp}>mdcat</span>
       </div>
       <div className={styles.terminalBody}>
-        <div className={styles.tuiH1}>
-          <span className={styles.h1Box}>╔══════════════════╗</span>
-          <span className={styles.h1Box}>║&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MDCAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║</span>
-          <span className={styles.h1Box}>╚══════════════════╝</span>
-        </div>
-        <div className={styles.tuiPara}>
-          View markdown files beautifully
-          <br />in your terminal.
-        </div>
-        <div className={styles.tuiH2}>
-          <span className={styles.h2Text}>Features</span>
-          <br />
-          <span className={styles.h2Bar}>──────────────────────────</span>
-        </div>
-        <div className={styles.tuiList}>
-          <div><span className={styles.bullet1}>●</span> Zero configuration</div>
-          <div><span className={styles.bullet2}>○</span> One Dark colour palette</div>
-          <div><span className={styles.bullet3}>‣</span> Incremental search <span className={styles.kbd}>/</span></div>
-          <div><span className={styles.bullet1}>●</span> Mouse wheel scrolling</div>
-          <div><span className={styles.bullet2}>○</span> OSC 8 clickable links</div>
-          <div><span className={styles.bullet3}>‣</span> GFM tables &amp; task lists</div>
-        </div>
-        <div className={styles.tuiHr}>──────────────────────────────────</div>
-        <div className={styles.tuiCodeTop}>┌─ <span className={styles.codeLang}>bash</span> ──────────────────┐</div>
-        <div className={styles.tuiCodeLine}>│ <span className={styles.codePrompt}>$</span> <span className={styles.codeText}>npx @dunkinfrunkin/mdcat README.md</span></div>
-        <div className={styles.tuiCodeBot}>└───────────────────────────────────┘</div>
+        <Panel />
       </div>
       <div className={styles.terminalStatus}>
         <span className={styles.tsHints}> q&nbsp;&nbsp;/&nbsp;&nbsp;j k&nbsp;&nbsp;↑↓&nbsp;&nbsp;space&nbsp;&nbsp;g G</span>
