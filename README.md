@@ -72,6 +72,8 @@ mdcat --help
 | Key            | Action                          |
 |----------------|---------------------------------|
 | `q`            | Quit                            |
+| `y`            | Copy visible page to clipboard  |
+| `M`            | Toggle mouse (for text select)  |
 | `j` / `k`      | Scroll down / up one line       |
 | `↑` / `↓`      | Scroll up / down one line       |
 | `Space` / `b`  | Page down / page up             |

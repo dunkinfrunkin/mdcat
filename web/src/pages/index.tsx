@@ -125,6 +125,8 @@ const FEATURES = [
 
 const KEYS = [
   {key: 'q', action: 'Quit'},
+  {key: 'y', action: 'Copy visible page to clipboard'},
+  {key: 'M', action: 'Toggle mouse (off = free text selection)'},
   {key: 'j / k', action: 'Scroll down / up one line'},
   {key: '↑ / ↓', action: 'Scroll up / down one line'},
   {key: 'Space / b', action: 'Page down / page up'},
