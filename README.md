@@ -1,10 +1,3 @@
-# mdcat
-
-[![npm version](https://img.shields.io/npm/v/@dunkinfrunkin/mdcat.svg)](https://www.npmjs.com/package/@dunkinfrunkin/mdcat)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-Terminal pager for Markdown. Full colour, syntax highlighting, search, mouse — zero config.
-
 ## Install
 
 ```sh
