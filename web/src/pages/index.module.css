@@ -29,6 +29,30 @@
   line-height: 1.6;
 }
 
+/* ── ASCII cat ── */
+
+.asciiCat {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: inline-block;
+}
+
+.catGray   { color: #5c6370; }
+.catBlue   { color: #61afef; }
+.catPurple { color: #c678dd; }
+
+.heroCatRow {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
 .heroGradient {
   background: linear-gradient(135deg, #61afef, #56b6c2, #98c379);
   -webkit-background-clip: text;
@@ -227,6 +251,14 @@
   color: #fff;
   font-weight: 600;
   flex: 1;
+}
+
+.tcCat {
+  color: #3e4451;
+  font-size: 0.65rem;
+  flex: 1;
+  text-align: center;
+  letter-spacing: 0.05em;
 }
 
 .tcApp {

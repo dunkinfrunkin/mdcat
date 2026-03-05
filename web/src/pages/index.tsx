@@ -7,6 +7,18 @@ import CodeBlock from '@theme/CodeBlock';
 
 import styles from './index.module.css';
 
+/* ── ASCII cat ── */
+
+function AsciiCat({className}: {className?: string}) {
+  return (
+    <pre className={clsx(styles.asciiCat, className)} aria-hidden>
+      <span className={styles.catGray}>{`  /\\_/\\  `}</span>{'\n'}
+      <span className={styles.catGray}>{` ( `}</span><span className={styles.catBlue}>o</span><span className={styles.catGray}>.</span><span className={styles.catBlue}>o</span><span className={styles.catGray}>{` ) `}</span>{'\n'}
+      <span className={styles.catGray}>{` =( `}</span><span className={styles.catPurple}>^</span><span className={styles.catGray}>{` )= `}</span>
+    </pre>
+  );
+}
+
 /* ── Terminal mockup ── */
 
 function TerminalDemo() {
@@ -21,6 +33,7 @@ function TerminalDemo() {
       <div className={styles.terminalChrome}>
         <span className={styles.tcBadge}>[md]</span>
         <span className={styles.tcFile}>README.md</span>
+        <span className={styles.tcCat}>{`/\\_/\\ (o.o) =(^)=`}</span>
         <span className={styles.tcApp}>mdcat</span>
       </div>
       <div className={styles.terminalBody}>
@@ -136,8 +149,11 @@ export default function Home(): ReactNode {
         <div className={styles.heroGlow} />
         <div className={styles.heroInner}>
           <div className={styles.heroLeft}>
-            <div className={styles.heroBadge}>
-              <span className={styles.heroBadgeText}>terminal · markdown · pager</span>
+            <div className={styles.heroCatRow}>
+              <AsciiCat />
+              <div className={styles.heroBadge}>
+                <span className={styles.heroBadgeText}>terminal · markdown · pager</span>
+              </div>
             </div>
             <Heading as="h1" className={styles.heroTitle}>
               <span className={styles.heroGradient}>mdcat</span>
