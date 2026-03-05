@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --ifm-color-primary: #61afef;
+  --ifm-color-primary-dark: #3d9de9;
+  --ifm-color-primary-darker: #2b94e6;
+  --ifm-color-primary-darkest: #1278c5;
+  --ifm-color-primary-light: #85c1f3;
+  --ifm-color-primary-lighter: #a0cff6;
+  --ifm-color-primary-lightest: #cce4fa;
+  --ifm-code-font-size: 95%;
+  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  --ifm-heading-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --mc-glow: rgba(97, 175, 239, 0.12);
+  --mc-glow-strong: rgba(97, 175, 239, 0.22);
+  --mc-surface: rgba(97, 175, 239, 0.04);
+  --mc-surface-hover: rgba(97, 175, 239, 0.08);
+  --mc-green: #98c379;
+  --mc-purple: #c678dd;
+  --mc-gold: #e5c07b;
+  --mc-red: #e06c75;
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #61afef;
+  --ifm-color-primary-dark: #3d9de9;
+  --ifm-color-primary-darker: #2b94e6;
+  --ifm-color-primary-darkest: #1278c5;
+  --ifm-color-primary-light: #85c1f3;
+  --ifm-color-primary-lighter: #a0cff6;
+  --ifm-color-primary-lightest: #cce4fa;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --mc-glow: rgba(97, 175, 239, 0.1);
+  --mc-glow-strong: rgba(97, 175, 239, 0.18);
+  --mc-surface: rgba(97, 175, 239, 0.05);
+  --mc-surface-hover: rgba(97, 175, 239, 0.09);
+}
+
+.navbar {
+  box-shadow: none;
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+  backdrop-filter: blur(12px);
+}
+
+.navbar__title {
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.theme-code-block {
+  border: 1px solid var(--ifm-color-emphasis-200) !important;
+}
+
+[data-theme='dark'] .theme-code-block {
+  border-color: var(--ifm-color-emphasis-300) !important;
+}
+
+.footer--dark {
+  background: #0a0a0f;
+}
