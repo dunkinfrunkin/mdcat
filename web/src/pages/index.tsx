@@ -201,25 +201,6 @@ export default function Home(): ReactNode {
         </div>
       </section>
 
-      {/* ── Install ── */}
-      <section className={styles.install}>
-        <div className="container">
-          <div className={styles.sectionHeader}>
-            <span className={styles.sectionCaret}>$</span>
-            <Heading as="h2" className={styles.sectionTitle}>Install</Heading>
-            <p className={styles.sectionSubtitle}>No install required. Just run it.</p>
-          </div>
-          <div className={styles.installCmdWrap}>
-            <div className={styles.installBox}>
-              <span className={styles.installPrompt}>$</span>
-              <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
-            </div>
-            <p className={styles.installAlt}>
-              Zero-install: <code>npx @dunkinfrunkin/mdcat README.md</code>
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* ── Keyboard shortcuts ── */}
       <section className={styles.keyboard}>
