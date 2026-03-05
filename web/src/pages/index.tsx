@@ -1,4 +1,4 @@
-import {type ReactNode, useState} from 'react';
+import {type ReactNode, useState, useEffect, useRef} from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
@@ -108,6 +108,24 @@ const DEMO_TABS = [
 
 function TerminalDemo() {
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const pauseRef = useRef(false);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!pauseRef.current) {
+        setActive(i => (i + 1) % DEMO_TABS.length);
+      }
+    }, 2800);
+    return () => clearInterval(id);
+  }, []);
+
+  function pick(i: number) {
+    setActive(i);
+    setPaused(true);
+    pauseRef.current = true;
+  }
+
   const {file, Panel} = DEMO_TABS[active];
 
   return (
@@ -120,7 +138,7 @@ function TerminalDemo() {
           {DEMO_TABS.map((t, i) => (
             <button key={t.label}
               className={clsx(styles.demoTab, i === active && styles.demoTabActive)}
-              onClick={() => setActive(i)}>
+              onClick={() => pick(i)}>
               {t.label}
             </button>
           ))}
@@ -131,7 +149,7 @@ function TerminalDemo() {
         <span className={styles.tcCat}>/\<span className={styles.catBlue}>(o.o)</span>/\</span>
         <span className={styles.tcApp}>mdcat</span>
       </div>
-      <div className={styles.terminalBody}>
+      <div key={active} className={styles.terminalBody}>
         <Panel />
       </div>
       <div className={styles.terminalStatus}>

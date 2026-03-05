@@ -292,7 +292,14 @@
 .terminalBody {
   padding: 0.75rem 0.85rem;
   background: #282c34;
-  min-height: 220px;
+  height: 280px;
+  overflow: hidden;
+  animation: termFade 0.3s ease;
+}
+
+@keyframes termFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .tuiH1 { display: flex; flex-direction: column; color: #c678dd; margin-bottom: 0.75rem; line-height: 1.3; }
