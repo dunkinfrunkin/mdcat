@@ -1,29 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
+/* Light mode */
 :root {
-  --ifm-color-primary: #61afef;
-  --ifm-color-primary-dark: #3d9de9;
-  --ifm-color-primary-darker: #2b94e6;
-  --ifm-color-primary-darkest: #1278c5;
-  --ifm-color-primary-light: #85c1f3;
-  --ifm-color-primary-lighter: #a0cff6;
-  --ifm-color-primary-lightest: #cce4fa;
+  --ifm-color-primary: #2178c4;
+  --ifm-color-primary-dark: #1d6aaf;
+  --ifm-color-primary-darker: #1a63a5;
+  --ifm-color-primary-darkest: #155188;
+  --ifm-color-primary-light: #2586d9;
+  --ifm-color-primary-lighter: #2d8fe0;
+  --ifm-color-primary-lightest: #4fa3e8;
   --ifm-code-font-size: 95%;
   --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --ifm-font-family-monospace: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
   --ifm-heading-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
-  --mc-glow: rgba(97, 175, 239, 0.12);
-  --mc-glow-strong: rgba(97, 175, 239, 0.22);
-  --mc-surface: rgba(97, 175, 239, 0.04);
-  --mc-surface-hover: rgba(97, 175, 239, 0.08);
-  --mc-green: #98c379;
-  --mc-purple: #c678dd;
-  --mc-gold: #e5c07b;
-  --mc-red: #e06c75;
+  --mc-glow: rgba(33, 120, 196, 0.08);
+  --mc-glow-strong: rgba(33, 120, 196, 0.1);
+  --mc-surface: rgba(33, 120, 196, 0.04);
+  --mc-surface-hover: rgba(33, 120, 196, 0.07);
+  --mc-glass: rgba(0, 0, 0, 0.04);
+  --mc-glass-code: rgba(0, 0, 0, 0.05);
+  --mc-glass-btn: rgba(0, 0, 0, 0.04);
+  --mc-video-border: var(--ifm-color-emphasis-300);
+  --mc-video-shadow: rgba(0, 0, 0, 0.1);
+  --mc-green: #2d8a4e;
+  --mc-purple: #8250df;
+  --mc-gold: #9a6700;
+  --mc-red: #cf222e;
+  --mc-hero-gradient: linear-gradient(135deg, #1d6aaf, #1a8a93, #2d8a4e);
 }
 
+/* Dark mode */
 [data-theme='dark'] {
   --ifm-color-primary: #61afef;
   --ifm-color-primary-dark: #3d9de9;
@@ -37,6 +45,16 @@
   --mc-glow-strong: rgba(97, 175, 239, 0.18);
   --mc-surface: rgba(97, 175, 239, 0.05);
   --mc-surface-hover: rgba(97, 175, 239, 0.09);
+  --mc-glass: rgba(0, 0, 0, 0.2);
+  --mc-glass-code: rgba(0, 0, 0, 0.25);
+  --mc-glass-btn: rgba(0, 0, 0, 0.15);
+  --mc-video-border: rgba(255, 255, 255, 0.08);
+  --mc-video-shadow: rgba(0, 0, 0, 0.5);
+  --mc-green: #98c379;
+  --mc-purple: #c678dd;
+  --mc-gold: #e5c07b;
+  --mc-red: #e06c75;
+  --mc-hero-gradient: linear-gradient(135deg, #61afef, #56b6c2, #98c379);
 }
 
 .navbar {

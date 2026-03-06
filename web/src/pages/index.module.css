@@ -73,7 +73,7 @@
 }
 
 .heroGradient {
-  background: linear-gradient(135deg, #61afef, #56b6c2, #98c379);
+  background: var(--mc-hero-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -145,7 +145,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1.25rem;
-  background: rgba(0,0,0,0.2);
+  background: var(--mc-glass);
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 10px;
   transition: border-color 0.2s;
@@ -192,7 +192,7 @@
 }
 
 .heroSecondary {
-  background: rgba(0,0,0,0.15) !important;
+  background: var(--mc-glass-btn) !important;
   color: var(--ifm-color-emphasis-800) !important;
   border: 1px solid var(--ifm-color-emphasis-200) !important;
   border-radius: 10px !important;
@@ -406,7 +406,7 @@
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 14px;
   padding: 1.5rem;
-  background: rgba(0,0,0,0.15);
+  background: var(--mc-glass);
   backdrop-filter: blur(4px);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   display: flex;
@@ -438,7 +438,7 @@
 }
 
 .featureCode {
-  background: rgba(0,0,0,0.25);
+  background: var(--mc-glass-code);
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 8px;
   padding: 0.65rem 0.9rem;
@@ -464,7 +464,7 @@
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 14px;
   overflow: hidden;
-  background: rgba(0,0,0,0.15);
+  background: var(--mc-glass);
   backdrop-filter: blur(4px);
 }
 
@@ -492,7 +492,7 @@
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.78rem;
   font-weight: 600;
-  background: rgba(0,0,0,0.25);
+  background: var(--mc-glass-code);
   border: 1px solid var(--ifm-color-emphasis-300);
   border-bottom-width: 2px;
   border-radius: 5px;
@@ -535,7 +535,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1.25rem;
-  background: rgba(0,0,0,0.2);
+  background: var(--mc-glass);
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 10px;
   margin-bottom: 1.75rem;
@@ -559,8 +559,8 @@
   margin: 0 auto;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 8px 48px rgba(0,0,0,0.5);
+  border: 1px solid var(--mc-video-border);
+  box-shadow: 0 8px 48px var(--mc-video-shadow);
 }
 
 .demoVideoInner video {
