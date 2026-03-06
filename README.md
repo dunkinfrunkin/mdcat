@@ -20,9 +20,6 @@ npm install -g @dunkinfrunkin/mdcat
 # Global
 npm install -g @dunkinfrunkin/mdcat
 
-# Homebrew
-brew install dunkinfrunkin/tap/mdcat
-
 # Zero-install
 npx @dunkinfrunkin/mdcat README.md
 ```
