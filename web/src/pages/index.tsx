@@ -264,23 +264,22 @@ export default function Home(): ReactNode {
           </div>
 
           <div className={styles.heroRight}>
-            <TerminalDemo />
+            <div className={styles.heroVideo}>
+              <div className={styles.terminalBar}>
+                <span className={styles.terminalDot} style={{background: '#e06c75'}} />
+                <span className={styles.terminalDot} style={{background: '#e5c07b'}} />
+                <span className={styles.terminalDot} style={{background: '#98c379'}} />
+                <span className={styles.terminalTitle}>mdcat README.md</span>
+              </div>
+              <video
+                src="https://github.com/dunkinfrunkin/mdcat/releases/download/v0.1.2/demo.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+            </div>
           </div>
-        </div>
-      </section>
-
-      <div className={styles.divider} />
-
-      {/* ── Demo video ── */}
-      <section className={styles.demoVideo}>
-        <div className={styles.demoVideoInner}>
-          <video
-            src="https://github.com/dunkinfrunkin/mdcat/releases/download/v0.1.2/demo.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-          />
         </div>
       </section>
 
@@ -309,6 +308,61 @@ export default function Home(): ReactNode {
         </div>
       </section>
 
+
+      <div className={styles.divider} />
+
+      {/* ── Browser mode ── */}
+      <section className={styles.browserSection}>
+        <div className="container">
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionCaret}>$</span>
+            <Heading as="h2" className={styles.sectionTitle}>Open in your browser</Heading>
+            <p className={styles.sectionSubtitle}>
+              Prefer a browser? Use the <code>--web</code> flag to render your Markdown as a styled HTML page and open it instantly.
+            </p>
+          </div>
+          <div className={styles.browserDemo}>
+            <div className={styles.browserInstallRow}>
+              <div className={styles.installBox}>
+                <span className={styles.installPrompt}>$</span>
+                <code className={styles.installCode}>mdcat --web README.md</code>
+              </div>
+            </div>
+            <div className={styles.browserMockup}>
+              <div className={styles.browserBar}>
+                <span className={styles.terminalDot} style={{background: '#e06c75'}} />
+                <span className={styles.terminalDot} style={{background: '#e5c07b'}} />
+                <span className={styles.terminalDot} style={{background: '#98c379'}} />
+                <div className={styles.browserUrlBar}>
+                  <span className={styles.browserUrl}>localhost:3000/README.md</span>
+                </div>
+              </div>
+              <div className={styles.browserBody}>
+                <div className={styles.browserContent}>
+                  <div className={styles.browserH1}>mdcat <span style={{opacity: 0.5}}>/\(o.o)/\</span></div>
+                  <p className={styles.browserMeta}>
+                    <span className={styles.browserBadge}>npm</span>
+                    <span className={styles.browserBadge}>MIT</span>
+                    <span className={styles.browserBadge}>node ≥18</span>
+                  </p>
+                  <p className={styles.browserPara}><strong>Terminal pager for Markdown.</strong> Full colour, syntax highlighting, incremental search, mouse support — zero config.</p>
+                  <div className={styles.browserCodeBlock}>
+                    npm install -g @dunkinfrunkin/mdcat
+                  </div>
+                  <div className={styles.browserH2}>Install</div>
+                  <div className={styles.browserCodeBlock}>
+                    {'# Global\n'}npm install -g @dunkinfrunkin/mdcat{'\n\n# Homebrew\n'}brew install frankchan/tap/mdcat
+                  </div>
+                  <div className={styles.browserH2}>Usage</div>
+                  <div className={styles.browserCodeBlock}>
+                    mdcat README.md{'          '}# open a file{'\n'}mdcat --web README.md{'    '}# render &amp; open in browser
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className={styles.divider} />
 
