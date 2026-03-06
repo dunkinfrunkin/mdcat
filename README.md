@@ -21,7 +21,7 @@ npm install -g @dunkinfrunkin/mdcat
 npm install -g @dunkinfrunkin/mdcat
 
 # Homebrew
-brew install frankchan/tap/mdcat
+brew install dunkinfrunkin/tap/mdcat
 
 # Zero-install
 npx @dunkinfrunkin/mdcat README.md
