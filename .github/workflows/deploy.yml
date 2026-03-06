@@ -50,3 +50,37 @@ jobs:
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  update-homebrew:
+    name: Update Homebrew formula
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compute tarball sha256
+        id: meta
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          URL="https://registry.npmjs.org/@dunkinfrunkin/mdcat/-/mdcat-${VERSION}.tgz"
+          SHA=$(curl -sL "$URL" | sha256sum | awk '{print $1}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "sha256=$SHA" >> $GITHUB_OUTPUT
+
+      - uses: actions/checkout@v4
+        with:
+          repository: dunkinfrunkin/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+      - name: Patch formula
+        run: |
+          sed -i 's|url ".*mdcat-.*\.tgz"|url "${{ steps.meta.outputs.url }}"|' Formula/mdcat.rb
+          sed -i 's|sha256 ".*"|sha256 "${{ steps.meta.outputs.sha256 }}"|' Formula/mdcat.rb
+          sed -i 's|version ".*"|version "${{ steps.meta.outputs.version }}"|' Formula/mdcat.rb
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/mdcat.rb
+          git diff --cached --quiet || git commit -m "chore: update mdcat to v${{ steps.meta.outputs.version }}"
+          git push
