@@ -351,7 +351,7 @@ export default function Home(): ReactNode {
                   </div>
                   <div className={styles.browserH2}>Install</div>
                   <div className={styles.browserCodeBlock}>
-                    {'# Global\n'}npm install -g @dunkinfrunkin/mdcat{'\n\n# Homebrew\n'}brew install frankchan/tap/mdcat
+                    {'# Global\n'}npm install -g @dunkinfrunkin/mdcat
                   </div>
                   <div className={styles.browserH2}>Usage</div>
                   <div className={styles.browserCodeBlock}>
