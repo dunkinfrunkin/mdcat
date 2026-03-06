@@ -100,11 +100,11 @@
 }
 
 .heroInner {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3.5rem;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 3rem;
   align-items: center;
   position: relative;
   z-index: 1;
@@ -393,6 +393,8 @@
 .heroVideo video {
   display: block;
   width: 100%;
+  min-height: 380px;
+  object-fit: cover;
 }
 
 /* ── Browser mockup ── */
@@ -551,8 +553,6 @@
   transform: translateY(-3px);
 }
 
-.featureIcon { font-size: 1.4rem; margin-bottom: 0.75rem; }
-
 .featureTitle {
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.92rem;
@@ -680,6 +680,54 @@
   gap: 0.75rem;
 }
 
+/* ── Follow section ── */
+
+.followSection {
+  padding: 5rem 2rem;
+  position: relative;
+}
+
+.followInner {
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.followTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+.followLinks {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.followLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 10px;
+  background: var(--mc-glass);
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.15s, color 0.15s;
+}
+
+.followLink:hover {
+  border-color: var(--ifm-color-primary-light);
+  color: var(--ifm-color-emphasis-900);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
 /* ── Demo video ── */
 
 .demoVideo {
@@ -706,12 +754,38 @@
   .heroInner { grid-template-columns: 1fr; gap: 2.5rem; }
   .heroTitle { font-size: 3rem; }
   .heroGlow { width: 500px; height: 400px; }
+  .heroRight { max-width: 600px; }
   .featuresGrid { grid-template-columns: 1fr 1fr; }
+  .keyGrid { max-width: 100%; }
+  .browserBody { padding: 1.5rem; }
 }
 
 @media screen and (max-width: 600px) {
-  .hero { padding: 3.5rem 1.5rem 3rem; }
-  .heroTitle { font-size: 2.5rem; }
+  .hero { padding: 3.5rem 1.25rem 3rem; }
+  .heroTitle { font-size: 2.25rem; }
+  .heroTagline { font-size: 1rem; }
+  .heroCatRow { flex-wrap: wrap; gap: 0.75rem; }
+  .heroButtons { flex-wrap: wrap; }
+  .heroRight { max-width: 100%; }
+  .heroVideo video { border-radius: 0; }
+  .installBox { padding: 0.6rem 1rem; }
+  .installCode { font-size: 0.78rem; }
   .featuresGrid { grid-template-columns: 1fr; }
-  .heroRight { display: none; }
+  .featureCard { padding: 1.25rem; }
+  .sectionTitle { font-size: 1.6rem; }
+  .ctaTitle { font-size: 2rem; }
+  .keyGrid { max-width: 100%; }
+  .keyBadge { min-width: 100px; }
+  .keyRow { gap: 1rem; padding: 0.5rem 1rem; }
+  .keyAction { font-size: 0.8rem; }
+  .browserBody { padding: 1rem; max-height: 280px; }
+  .browserH1 { font-size: 1.3rem; }
+  .browserSection { padding: 4rem 1.25rem; }
+  .features { padding: 4rem 1.25rem; }
+  .keyboard { padding: 4rem 1.25rem; }
+  .cta { padding: 5rem 1.25rem; }
+  .ctaBox { flex-wrap: wrap; justify-content: center; }
+  .followSection { padding: 3.5rem 1.25rem; }
+  .followLinks { flex-direction: column; align-items: center; gap: 0.75rem; }
+  .followLink { width: 100%; max-width: 220px; justify-content: center; }
 }
