@@ -30,7 +30,7 @@ jobs:
           projectName: mdcat
           directory: web/build
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ startsWith(github.ref, 'refs/tags/') && 'production' || 'preview' }}
+          branch: main
 
   publish-npm:
     name: Publish to npm
