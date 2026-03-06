@@ -10,6 +10,8 @@
 npm install -g @dunkinfrunkin/mdcat
 ```
 
+<video src="https://github.com/dunkinfrunkin/mdcat/releases/download/v0.1.2/demo.mp4" autoplay loop muted playsinline width="100%"></video>
+
 ---
 
 ## Install
