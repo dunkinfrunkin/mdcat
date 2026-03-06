@@ -271,6 +271,21 @@ export default function Home(): ReactNode {
 
       <div className={styles.divider} />
 
+      {/* ── Demo video ── */}
+      <section className={styles.demoVideo}>
+        <div className={styles.demoVideoInner}>
+          <video
+            src="https://github.com/dunkinfrunkin/mdcat/releases/download/v0.1.2/demo.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        </div>
+      </section>
+
+      <div className={styles.divider} />
+
       {/* ── Features ── */}
       <section className={styles.features}>
         <div className="container">
