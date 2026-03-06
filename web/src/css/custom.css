@@ -98,3 +98,29 @@
 .footer--dark {
   background: #0a0a0f;
 }
+
+/* ── Navbar social icons ── */
+
+.navbar-socials {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navbar-socials-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-500);
+  margin-right: 0.25rem;
+}
+
+.navbar-socials a {
+  display: flex;
+  align-items: center;
+  color: var(--ifm-color-emphasis-600);
+  transition: color 0.15s;
+}
+
+.navbar-socials a:hover {
+  color: var(--ifm-color-emphasis-900);
+}
