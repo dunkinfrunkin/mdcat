@@ -122,7 +122,7 @@ export function launch(title, lines) {
   let matchIdx    = 0;
 
   // Mouse / clipboard state
-  let mouseEnabled = true;
+  let mouseEnabled = false;
   let toast        = "";        // brief status message
   let toastTimer   = null;
 
@@ -248,9 +248,9 @@ export function launch(title, lines) {
 
     const mouseHint = mouseEnabled ? "" : `${C.matchFg} [select mode]${RESET}`;
     const mouseW    = mouseEnabled ? 0 : " [select mode]".length;
-    const hints  = `${C.dim} q  y  /  j k  ↑↓  space  g G${RESET}`;
+    const hints  = `${C.dim} q  y  /  j k  ↑↓  space  g G  M${RESET}`;
     const right  = `${C.dimFg} ${pct} ${RESET}`;
-    const hintsW = " q  y  /  j k  ↑↓  space  g G".length;
+    const hintsW = " q  y  /  j k  ↑↓  space  g G  M".length;
     const rightW = ` ${pct} `.length;
     const gap    = Math.max(0, w - hintsW - mouseW - rightW);
     return `${C.chromeBg}${hints}${mouseHint}${" ".repeat(gap)}${right}${RESET}`;
@@ -373,7 +373,7 @@ export function launch(title, lines) {
 
   // ─── Boot ──────────────────────────────────────────────────────────────────
 
-  process.stdout.write(ALT_ON + HIDE_CUR + MOUSE_ON);
+  process.stdout.write(ALT_ON + HIDE_CUR);
   if (process.stdin.setRawMode) {
     process.stdin.setRawMode(true);
     process.stdin.resume();
