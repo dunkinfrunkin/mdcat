@@ -9,11 +9,15 @@ on:
 
 jobs:
   deploy-docs:
-    name: Deploy docs to Cloudflare Pages
+    name: Deploy docs to GitHub Pages
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      deployments: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,14 +27,11 @@ jobs:
         working-directory: web
       - run: npm run build
         working-directory: web
-      - uses: cloudflare/pages-action@v1
+      - uses: actions/upload-pages-artifact@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: 6df58cefdba2868e552cabd99b30e2fb
-          projectName: mdcat
-          directory: web/build
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          path: web/build
+      - id: deploy
+        uses: actions/deploy-pages@v4
 
   publish-npm:
     name: Publish to npm
