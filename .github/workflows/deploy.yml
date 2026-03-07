@@ -10,6 +10,7 @@ on:
 jobs:
   deploy-docs:
     name: Deploy docs to GitHub Pages
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
