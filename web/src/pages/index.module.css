@@ -138,7 +138,13 @@
   max-width: 480px;
 }
 
-.heroInstall { margin-bottom: 1.75rem; }
+.heroInstall {
+  margin-bottom: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
 
 .installBox {
   display: inline-flex;
@@ -670,8 +676,12 @@
   background: var(--mc-glass);
   border: 1px solid var(--ifm-color-emphasis-200);
   border-radius: 10px;
-  margin-bottom: 1.75rem;
+  margin-bottom: 0.5rem;
   cursor: text;
+}
+
+.ctaBox:last-of-type {
+  margin-bottom: 1.75rem;
 }
 
 .ctaButtons {

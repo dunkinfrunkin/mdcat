@@ -51,3 +51,70 @@ jobs:
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  update-homebrew:
+    name: Update Homebrew formula
+    needs: publish-npm
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update formula
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          TARBALL_URL="https://registry.npmjs.org/@dunkinfrunkin/mdcat/-/mdcat-${VERSION}.tgz"
+
+          # Wait for npm to propagate the package
+          for i in 1 2 3 4 5; do
+            if curl -sfL "$TARBALL_URL" -o /tmp/mdcat.tgz; then
+              break
+            fi
+            echo "Waiting for npm to propagate... (attempt $i)"
+            sleep 15
+          done
+
+          SHA256=$(shasum -a 256 /tmp/mdcat.tgz | awk '{print $1}')
+
+          FORMULA=$(cat <<RUBY
+          # typed: false
+          # frozen_string_literal: true
+
+          class Mdcat < Formula
+            desc "Terminal pager for Markdown with syntax highlighting and search"
+            homepage "https://github.com/dunkinfrunkin/mdcat"
+            url "${TARBALL_URL}"
+            sha256 "${SHA256}"
+            license "MIT"
+            version "${VERSION}"
+
+            depends_on "node"
+
+            def install
+              system "npm", "install", "--production", "--ignore-scripts"
+              libexec.install Dir["*"]
+              (bin/"mdcat").write <<~SH
+                #!/bin/sh
+                exec "#{Formula["node"].opt_bin}/node" "#{libexec}/src/cli.js" "\$@"
+              SH
+              chmod 0755, bin/"mdcat"
+            end
+
+            test do
+              (testpath/"test.md").write "# Hello\n\nWorld"
+              assert_match "Hello", shell_output("#{bin}/mdcat #{testpath}/test.md 2>&1 || true")
+            end
+          end
+          RUBY
+          )
+
+          # Get current file SHA from the repo
+          FILE_SHA=$(gh api repos/dunkinfrunkin/homebrew-tap/contents/Formula/mdcat.rb --jq '.sha')
+
+          # Update the formula
+          echo "$FORMULA" | gh api repos/dunkinfrunkin/homebrew-tap/contents/Formula/mdcat.rb \
+            -X PUT \
+            -f message="chore: update mdcat to ${VERSION}" \
+            -f content="$(echo "$FORMULA" | base64)" \
+            -f sha="$FILE_SHA"

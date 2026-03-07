@@ -68,6 +68,7 @@ const config: Config = {
           items: [
             {label: 'npx (zero-install)', href: 'https://www.npmjs.com/package/@dunkinfrunkin/mdcat'},
             {label: 'npm global', href: 'https://www.npmjs.com/package/@dunkinfrunkin/mdcat'},
+            {label: 'Homebrew', href: 'https://github.com/dunkinfrunkin/homebrew-tap'},
           ],
         },
         {
