@@ -7,6 +7,32 @@ import CodeBlock from '@theme/CodeBlock';
 
 import styles from './index.module.css';
 
+/* ── Copy-to-clipboard install box ── */
+
+function CopyBox({command, className}: {command: string; className?: string}) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  return (
+    <div className={clsx(styles.installBox, className)} onClick={copy} role="button" tabIndex={0}>
+      <span className={styles.installPrompt}>$</span>
+      <code className={styles.installCode}>{command}</code>
+      <button className={styles.copyBtn} onClick={copy} aria-label="Copy to clipboard">
+        {copied ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        )}
+      </button>
+    </div>
+  );
+}
+
 /* ── ASCII cat ── */
 
 function AsciiCat({className}: {className?: string}) {
@@ -239,14 +265,9 @@ export default function Home(): ReactNode {
             </p>
 
             <div className={styles.heroInstall}>
-              <div className={styles.installBox}>
-                <span className={styles.installPrompt}>$</span>
-                <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
-              </div>
-              <div className={styles.installBox}>
-                <span className={styles.installPrompt}>$</span>
-                <code className={styles.installCode}>brew install dunkinfrunkin/tap/mdcat</code>
-              </div>
+              <CopyBox command="npm i -g @dunkinfrunkin/mdcat" />
+              <span className={styles.installOr}>or</span>
+              <CopyBox command="brew install dunkinfrunkin/tap/mdcat" />
             </div>
 
             <div className={styles.heroButtons}>
@@ -320,10 +341,7 @@ export default function Home(): ReactNode {
           </div>
           <div className={styles.browserDemo}>
             <div className={styles.browserInstallRow}>
-              <div className={styles.installBox}>
-                <span className={styles.installPrompt}>$</span>
-                <code className={styles.installCode}>mdcat --web README.md</code>
-              </div>
+              <CopyBox command="mdcat --web README.md" />
             </div>
             <div className={styles.browserMockup}>
               <div className={styles.browserBar}>
@@ -402,14 +420,9 @@ export default function Home(): ReactNode {
           <p className={styles.ctaSubtitle}>
             No install required. Just paste this into your terminal.
           </p>
-          <div className={styles.ctaBox}>
-            <span className={styles.installPrompt}>$</span>
-            <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
-          </div>
-          <div className={styles.ctaBox}>
-            <span className={styles.installPrompt}>$</span>
-            <code className={styles.installCode}>brew install dunkinfrunkin/tap/mdcat</code>
-          </div>
+          <CopyBox command="npm i -g @dunkinfrunkin/mdcat" className={styles.ctaBox} />
+          <span className={styles.installOr}>or</span>
+          <CopyBox command="brew install dunkinfrunkin/tap/mdcat" className={styles.ctaBox} />
           <div className={styles.ctaButtons}>
             <Link className={clsx('button button--primary button--lg', styles.heroPrimary)}
               to="https://github.com/dunkinfrunkin/mdcat">
