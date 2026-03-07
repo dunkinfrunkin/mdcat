@@ -243,6 +243,10 @@ export default function Home(): ReactNode {
                 <span className={styles.installPrompt}>$</span>
                 <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
               </div>
+              <div className={styles.installBox}>
+                <span className={styles.installPrompt}>$</span>
+                <code className={styles.installCode}>brew install dunkinfrunkin/tap/mdcat</code>
+              </div>
             </div>
 
             <div className={styles.heroButtons}>
@@ -344,7 +348,7 @@ export default function Home(): ReactNode {
                   </div>
                   <div className={styles.browserH2}>Install</div>
                   <div className={styles.browserCodeBlock}>
-                    {'# Global\n'}npm install -g @dunkinfrunkin/mdcat
+                    {'# npm\n'}npm install -g @dunkinfrunkin/mdcat{'\n\n'}{'# Homebrew\n'}brew install dunkinfrunkin/tap/mdcat
                   </div>
                   <div className={styles.browserH2}>Usage</div>
                   <div className={styles.browserCodeBlock}>
@@ -401,6 +405,10 @@ export default function Home(): ReactNode {
           <div className={styles.ctaBox}>
             <span className={styles.installPrompt}>$</span>
             <code className={styles.installCode}>npm i -g @dunkinfrunkin/mdcat</code>
+          </div>
+          <div className={styles.ctaBox}>
+            <span className={styles.installPrompt}>$</span>
+            <code className={styles.installCode}>brew install dunkinfrunkin/tap/mdcat</code>
           </div>
           <div className={styles.ctaButtons}>
             <Link className={clsx('button button--primary button--lg', styles.heroPrimary)}
