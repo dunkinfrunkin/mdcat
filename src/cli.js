@@ -6,6 +6,7 @@ import { execFileSync } from "child_process";
 import { marked } from "marked";
 import { renderTokens } from "./render.js";
 import { launch } from "./tui.js";
+import { toDocx } from "./docx.js";
 
 marked.use({ gfm: true });
 
@@ -27,6 +28,7 @@ if (args[0] === "--help" || args[0] === "-h") {
   console.log(`${bold("Usage:")}`);
   console.log(`  mdcat ${dim("<file.md>")}`);
   console.log(`  mdcat ${dim("--web <file.md>")}   ${dim("# open in browser")}`);
+  console.log(`  mdcat ${dim("--doc <file.md>")}   ${dim("# export to .docx")}`);
   console.log(`  cat file.md ${dim("|")} mdcat\n`);
   console.log(`${bold("Keys:")}`);
   console.log(`  ${blue("/")}          search          ${blue("n/N")}   next/prev match`);
@@ -102,16 +104,30 @@ function runTUI(title, content) {
   launch(title, lines);
 }
 
-// --web flag
+// --web / --doc flags
 const webMode = args[0] === "--web" || args[0] === "-w";
-const fileArgs = webMode ? args.slice(1) : args;
+const docMode = args[0] === "--doc" || args[0] === "-d";
+const fileArgs = (webMode || docMode) ? args.slice(1) : args;
+
+async function exportDocx(title, content) {
+  const tokens = marked.lexer(content);
+  const buf = await toDocx(tokens, title);
+  const outName = title.replace(/\.md$/i, "") + ".docx";
+  const outPath = resolve(outName);
+  writeFileSync(outPath, buf);
+  console.log(`${CAT}  ${bold("mdcat")} ${dim("→")} ${blue(outPath)}`);
+}
 
 // Piped input
 if (!process.stdin.isTTY && fileArgs.length === 0) {
   let input = "";
   process.stdin.setEncoding("utf8");
   process.stdin.on("data", (chunk) => (input += chunk));
-  process.stdin.on("end", () => webMode ? openInBrowser("stdin", input) : runTUI("stdin", input));
+  process.stdin.on("end", () => {
+    if (docMode) exportDocx("stdin", input);
+    else if (webMode) openInBrowser("stdin", input);
+    else runTUI("stdin", input);
+  });
 } else if (fileArgs.length === 0) {
   console.error("Usage: mdcat <file.md>");
   process.exit(1);
@@ -125,5 +141,7 @@ if (!process.stdin.isTTY && fileArgs.length === 0) {
     process.exit(1);
   }
   const title = basename(filePath);
-  webMode ? openInBrowser(title, content) : runTUI(title, content);
+  if (docMode) exportDocx(title, content);
+  else if (webMode) openInBrowser(title, content);
+  else runTUI(title, content);
 }
