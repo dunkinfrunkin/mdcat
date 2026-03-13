@@ -202,11 +202,6 @@ function code(tok, w) {
   // Expand tabs to 2 spaces
   const rawText = (tok.text ?? "").replace(/\t/g, "  ");
 
-  // innerW = content width between borders (1 space padding each side)
-  const innerW = w - 2;
-  // borderW = total inner span for the box (includes the 1px padding each side)
-  const borderW = innerW + 2;
-
   let rawLines;
   if (rawText === "") {
     rawLines = [""];
@@ -239,13 +234,21 @@ function code(tok, w) {
   // Pad to same length just in case highlight produced different line count
   while (highlighted.length < rawLines.length) highlighted.push("");
 
+  // Size the box to the longest line (capped at terminal width)
+  const maxLineW = highlighted.reduce((m, l) => Math.max(m, vlen(l)), 0);
+  const langTagLen = lang ? 1 + lang.length + 1 : 0; // " lang " visual chars
+  // innerW = content area between pipes (1 space padding each side)
+  // Must fit: longest line, lang tag in top border, and minimum 4 chars
+  const innerW = Math.min(w - 2, Math.max(maxLineW, langTagLen + 2, 4));
+  // borderW = total inner span for the box (includes the 1-char padding each side)
+  const borderW = innerW + 2;
+
   const lines = [""];
 
   // Top border: ┌─ lang ─────┐ or ┌──────────────┐
   let top;
   if (lang) {
     const langTag = " " + c.codeLang(lang) + " ";
-    const langTagLen = 1 + lang.length + 1; // visual chars
     const fill = Math.max(0, borderW - langTagLen - 1); // -1 for leading "─"
     top =
       c.border("┌─") +
