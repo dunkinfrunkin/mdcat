@@ -45,14 +45,28 @@ if (args[0] === "--version" || args[0] === "-v") {
 
 const MAX_COLS = 100;
 
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 function openInBrowser(title, content) {
-  const html = marked.parse(content);
+  // Use a custom renderer that escapes raw HTML tokens so bare <tag> in
+  // markdown text isn't swallowed by the browser.
+  const webMarked = new marked.Marked({ gfm: true });
+  webMarked.use({
+    renderer: {
+      html(token) {
+        return escapeHtml(token.text);
+      },
+    },
+  });
+  const html = webMarked.parse(content);
   const page = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${title}</title>
+  <title>${escapeHtml(title)}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
