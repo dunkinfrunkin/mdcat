@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@dunkinfrunkin/mdcat?color=61afef&label=npm)](https://www.npmjs.com/package/@dunkinfrunkin/mdcat)
 [![license](https://img.shields.io/badge/license-MIT-98c379)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-e5c07b)](package.json)
+[![site](https://img.shields.io/badge/site-mdcat.frankchan.dev-61afef)](https://mdcat.frankchan.dev)
 
 **Terminal pager for Markdown.** Full colour, syntax highlighting, incremental search, mouse support — zero config.
 
@@ -10,7 +11,7 @@
 npm install -g @dunkinfrunkin/mdcat
 ```
 
-<video src="https://github.com/dunkinfrunkin/mdcat/releases/download/v0.1.2/demo.mp4" autoplay loop muted playsinline width="100%"></video>
+![mdcat demo](https://github.com/dunkinfrunkin/mdcat/releases/download/v0.1.12/demo.gif)
 
 ---
 
@@ -107,6 +108,12 @@ npm test
 All PRs must pass `npm test` (68 tests).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
+## Links
+
+- [mdcat.frankchan.dev](https://mdcat.frankchan.dev) -- landing page
+- [npm package](https://www.npmjs.com/package/@dunkinfrunkin/mdcat)
+- [GitHub](https://github.com/dunkinfrunkin/mdcat)
 
 ## License
 
