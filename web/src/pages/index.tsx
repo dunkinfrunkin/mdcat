@@ -190,9 +190,9 @@ function TerminalDemo() {
 
 const FEATURES = [
   {
-    title: 'One Dark palette',
-    desc: 'Easy on the eyes in any dark terminal. Consistent colors for every Markdown element.',
-    code: '# Heading\n**bold** _italic_ `code`\n> blockquote',
+    title: 'Light & dark themes',
+    desc: 'Auto-detects your terminal background. One Dark for dark terminals, One Light for light ones. Override with --light or --dark.',
+    code: 'mdcat README.md          # auto\nmdcat --light README.md  # force\nMDCAT_THEME=dark mdcat …',
   },
   {
     title: 'Incremental search',

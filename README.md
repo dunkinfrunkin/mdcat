@@ -32,6 +32,8 @@ npx @dunkinfrunkin/mdcat README.md
 ```sh
 mdcat README.md                  # open a file
 mdcat --web README.md            # render and open in browser
+mdcat --light README.md          # force light theme
+mdcat --dark README.md           # force dark theme
 cat CHANGELOG.md | mdcat         # pipe from stdin
 curl -s https://… | mdcat        # pipe from curl
 mdcat --help                     # show help
@@ -54,6 +56,23 @@ mdcat --version                  # show version
 | `Esc` | Clear search |
 | Mouse wheel | Scroll three lines |
 
+## Theme
+
+mdcat auto-detects your terminal's light or dark background and adjusts colors accordingly.
+
+**Auto-detection** checks (in order):
+1. `MDCAT_THEME` env var (`light` or `dark`)
+2. `COLORFGBG` env var (set by many terminals)
+3. macOS system appearance (light/dark mode)
+4. Falls back to dark
+
+**Override manually:**
+```sh
+mdcat --light README.md          # force light theme
+mdcat --dark README.md           # force dark theme
+MDCAT_THEME=light mdcat file.md  # env var override
+```
+
 ## What it renders
 
 | Element | Rendering |
@@ -62,7 +81,7 @@ mdcat --version                  # show version
 | H2 | Bold blue with underline |
 | H3–H6 | Green → yellow → cyan → dim |
 | **Bold** / _italic_ / ~~strike~~ | Standard ANSI |
-| `inline code` | Amber on dark background |
+| `inline code` | Amber on dark bg / brown on light bg |
 | Fenced code | Bordered box with syntax highlighting |
 | Blockquotes | Amber `▌` bar, dim italic |
 | Unordered lists | `●` / `○` / `‣` bullets |
