@@ -4,9 +4,10 @@ import { resolve, basename } from "path";
 import { tmpdir } from "os";
 import { execFileSync } from "child_process";
 import { marked, Marked } from "marked";
-import { renderTokens } from "./render.js";
+import { renderTokens, setTheme } from "./render.js";
 import { launch } from "./tui.js";
 import { toDocx } from "./docx.js";
+import { detectTheme, themeFromArgs, stripThemeArgs } from "./theme.js";
 
 marked.use({ gfm: true });
 
@@ -20,7 +21,7 @@ const bold = s => `${E}[1m${s}${E}[0m`;
 
 const CAT = `  ${gray("/\\")}${blue("(o.o)")}${gray("/\\")}  `;
 
-const args = process.argv.slice(2);
+let args = process.argv.slice(2);
 
 if (args[0] === "--help" || args[0] === "-h") {
   console.log(`\n${CAT}  ${bold("mdcat")} ${dim(`v${pkg.version}`)}`);
@@ -29,7 +30,12 @@ if (args[0] === "--help" || args[0] === "-h") {
   console.log(`  mdcat ${dim("<file.md>")}`);
   console.log(`  mdcat ${dim("--web <file.md>")}   ${dim("# open in browser")}`);
   console.log(`  mdcat ${dim("--doc <file.md>")}   ${dim("# export to .docx")}`);
+  console.log(`  mdcat ${dim("--light")}           ${dim("# force light theme")}`);
+  console.log(`  mdcat ${dim("--dark")}            ${dim("# force dark theme")}`);
   console.log(`  cat file.md ${dim("|")} mdcat\n`);
+  console.log(`${bold("Theme:")}`);
+  console.log(`  Auto-detects terminal theme. Override with ${blue("--light")} / ${blue("--dark")}`);
+  console.log(`  or set ${blue("MDCAT_THEME")}=light|dark\n`);
   console.log(`${bold("Keys:")}`);
   console.log(`  ${blue("/")}          search          ${blue("n/N")}   next/prev match`);
   console.log(`  ${blue("j/k")} ${dim("↑↓")}    scroll line     ${blue("space/b")} page down/up`);
@@ -37,6 +43,11 @@ if (args[0] === "--help" || args[0] === "-h") {
   console.log(`  ${blue("q")}          quit\n`);
   process.exit(0);
 }
+
+// Resolve theme: CLI flag > env var > auto-detect
+const activeTheme = themeFromArgs(args) ?? detectTheme();
+args = stripThemeArgs(args);
+setTheme(activeTheme);
 
 if (args[0] === "--version" || args[0] === "-v") {
   console.log(`${CAT}  ${bold("mdcat")} ${dim(`v${pkg.version}`)}`);
@@ -61,6 +72,7 @@ function openInBrowser(title, content) {
     },
   });
   const html = webMarked.parse(content);
+  const isLight = activeTheme === "light";
   const page = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,31 +82,31 @@ function openInBrowser(title, content) {
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #282c34;
-      color: #abb2bf;
+      background: ${isLight ? "#fafafa" : "#282c34"};
+      color: ${isLight ? "#383a42" : "#abb2bf"};
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       font-size: 16px;
       line-height: 1.7;
       padding: 2rem 1rem;
     }
     .wrap { max-width: 760px; margin: 0 auto; }
-    h1, h2, h3, h4, h5, h6 { color: #e5c07b; margin: 1.5rem 0 0.5rem; font-weight: 700; }
-    h1 { font-size: 2rem; color: #c678dd; border-bottom: 2px solid #3e4451; padding-bottom: 0.4rem; }
-    h2 { font-size: 1.4rem; color: #61afef; border-bottom: 1px solid #3e4451; padding-bottom: 0.3rem; }
-    h3 { font-size: 1.15rem; color: #98c379; }
+    h1, h2, h3, h4, h5, h6 { color: ${isLight ? "#c18401" : "#e5c07b"}; margin: 1.5rem 0 0.5rem; font-weight: 700; }
+    h1 { font-size: 2rem; color: ${isLight ? "#a626a4" : "#c678dd"}; border-bottom: 2px solid ${isLight ? "#d3d3d8" : "#3e4451"}; padding-bottom: 0.4rem; }
+    h2 { font-size: 1.4rem; color: ${isLight ? "#4078f2" : "#61afef"}; border-bottom: 1px solid ${isLight ? "#d3d3d8" : "#3e4451"}; padding-bottom: 0.3rem; }
+    h3 { font-size: 1.15rem; color: ${isLight ? "#50a14f" : "#98c379"}; }
     p { margin: 0.75rem 0; }
-    a { color: #61afef; text-decoration: underline; }
-    code { background: #2c313a; color: #e5c07b; padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.9em; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
-    pre { background: #21252b; border: 1px solid #3e4451; border-radius: 8px; padding: 1rem 1.25rem; overflow-x: auto; margin: 1rem 0; }
-    pre code { background: none; color: #abb2bf; padding: 0; font-size: 0.875rem; }
-    blockquote { border-left: 3px solid #e5c07b; padding: 0.5rem 1rem; margin: 1rem 0; color: #5c6370; font-style: italic; }
+    a { color: ${isLight ? "#4078f2" : "#61afef"}; text-decoration: underline; }
+    code { background: ${isLight ? "#e8e8e8" : "#2c313a"}; color: ${isLight ? "#986801" : "#e5c07b"}; padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.9em; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    pre { background: ${isLight ? "#f0f0f0" : "#21252b"}; border: 1px solid ${isLight ? "#d3d3d8" : "#3e4451"}; border-radius: 8px; padding: 1rem 1.25rem; overflow-x: auto; margin: 1rem 0; }
+    pre code { background: none; color: ${isLight ? "#383a42" : "#abb2bf"}; padding: 0; font-size: 0.875rem; }
+    blockquote { border-left: 3px solid ${isLight ? "#c18401" : "#e5c07b"}; padding: 0.5rem 1rem; margin: 1rem 0; color: ${isLight ? "#696c77" : "#5c6370"}; font-style: italic; }
     ul, ol { padding-left: 1.5rem; margin: 0.75rem 0; }
     li { margin: 0.25rem 0; }
     table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
-    th { background: #21252b; color: #61afef; padding: 0.5rem 0.75rem; border: 1px solid #3e4451; text-align: left; }
-    td { padding: 0.5rem 0.75rem; border: 1px solid #3e4451; }
-    tr:nth-child(even) { background: #2c313a; }
-    hr { border: none; border-top: 1px solid #3e4451; margin: 1.5rem 0; }
+    th { background: ${isLight ? "#e8e8e8" : "#21252b"}; color: ${isLight ? "#4078f2" : "#61afef"}; padding: 0.5rem 0.75rem; border: 1px solid ${isLight ? "#d3d3d8" : "#3e4451"}; text-align: left; }
+    td { padding: 0.5rem 0.75rem; border: 1px solid ${isLight ? "#d3d3d8" : "#3e4451"}; }
+    tr:nth-child(even) { background: ${isLight ? "#f0f0f0" : "#2c313a"}; }
+    hr { border: none; border-top: 1px solid ${isLight ? "#d3d3d8" : "#3e4451"}; margin: 1.5rem 0; }
     img { max-width: 100%; border-radius: 6px; }
   </style>
 </head>
@@ -116,7 +128,7 @@ function runTUI(title, content) {
   const cols = Math.min(termCols, MAX_COLS);
   const tokens = marked.lexer(content);
   const lines = renderTokens(tokens, cols, termCols > MAX_COLS ? termCols : undefined);
-  launch(title, lines);
+  launch(title, lines, activeTheme);
 }
 
 // --web / --doc flags

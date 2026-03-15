@@ -26,9 +26,10 @@ All 68 tests must pass before submitting. If you add a feature, add a test for i
 
 ```
 src/
-  cli.js      — entry point, arg parsing, --web flag
+  cli.js      — entry point, arg parsing, --web/--light/--dark flags
   render.js   — markdown tokens → ANSI-coloured string[]
   tui.js      — raw terminal TUI (alternate screen, input, draw loop)
+  theme.js    — light/dark theme detection and CLI flag helpers
 test/
   index.js    — node:test suite (68 tests)
 web/
@@ -40,7 +41,7 @@ web/
 - Keep it dependency-light — think twice before adding a new package
 - `render.js` and `tui.js` use raw ANSI escape codes, no terminal libraries
 - All rendering helpers (`vlen`, `vtrunc`, `vpad`) must be ANSI-aware
-- Match the One Dark colour palette for any new visual elements
+- Match the One Dark / One Light colour palettes for any new visual elements (see `render.js` `darkPalette()` and `lightPalette()`)
 
 ## Commit style
 
