@@ -468,7 +468,7 @@ function hr(w) {
 
 // ─── Token dispatcher ──────────────────────────────────────────────────────────
 
-function token(tok, w) {
+function token(tok, w, tableW) {
   try {
     switch (tok.type) {
       case "heading":
@@ -482,7 +482,7 @@ function token(tok, w) {
       case "list":
         return ["", ...list(tok, w, 0), ""];
       case "table":
-        return table(tok, w);
+        return table(tok, tableW ?? w);
       case "hr":
         return hr(w);
       case "space":
@@ -504,9 +504,11 @@ function token(tok, w) {
  *
  * @param {import("marked").Token[]} tokens  - Output of `marked.lexer()`
  * @param {number} cols                      - Terminal width (default 80)
+ * @param {number} [fullCols]               - Uncapped terminal width for tables
  * @returns {string[]}
  */
-export function renderTokens(tokens, cols = 80) {
+export function renderTokens(tokens, cols = 80, fullCols) {
   const w = Math.max(20, cols - MARGIN.length * 2);
-  return tokens.flatMap((tok) => token(tok, w));
+  const tableW = fullCols ? Math.max(20, fullCols - MARGIN.length * 2) : undefined;
+  return tokens.flatMap((tok) => token(tok, w, tableW));
 }
