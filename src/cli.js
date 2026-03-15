@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { resolve, basename } from "path";
 import { tmpdir } from "os";
 import { execFileSync } from "child_process";
-import { marked } from "marked";
+import { marked, Marked } from "marked";
 import { renderTokens } from "./render.js";
 import { launch } from "./tui.js";
 import { toDocx } from "./docx.js";
@@ -52,7 +52,7 @@ function escapeHtml(s) {
 function openInBrowser(title, content) {
   // Use a custom renderer that escapes raw HTML tokens so bare <tag> in
   // markdown text isn't swallowed by the browser.
-  const webMarked = new marked.Marked({ gfm: true });
+  const webMarked = new Marked({ gfm: true });
   webMarked.use({
     renderer: {
       html(token) {
