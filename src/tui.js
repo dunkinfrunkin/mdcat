@@ -12,17 +12,36 @@ const ERASE_L   = `${ESC}[2K`;
 const RESET     = `${ESC}[0m`;
 const move      = (r, c) => `${ESC}[${r};${c}H`;
 
-// One Dark-aligned color palette (24-bit ANSI)
-const C = {
-  chromeBg:    `${ESC}[48;2;33;37;43m`,    // #21252b  — top/bottom chrome bg
+// Color palettes for TUI chrome (24-bit ANSI)
+const DARK = {
+  chromeBg:    `${ESC}[48;2;33;37;43m`,    // #21252b
   badge:       `${ESC}[38;2;198;120;221m`,  // #c678dd  — purple badge
   titleFg:     `${ESC}[97m`,                // bright white — filename
-  dimFg:       `${ESC}[38;2;92;99;112m`,   // #5c6370  — dim hints / app name
-  accentFg:    `${ESC}[38;2;97;175;239m`,  // #61afef  — blue search prompt
-  matchFg:     `${ESC}[38;2;229;192;123m`, // #e5c07b  — gold current match
-  greenFg:     `${ESC}[38;2;152;195;121m`, // #98c379  — match count
-  redFg:       `${ESC}[38;2;224;108;117m`, // #e06c75  — no matches
-  otherMatchFg:`${ESC}[38;2;92;99;112m`,   // #5c6370  — other match gutter
+  dimFg:       `${ESC}[38;2;92;99;112m`,   // #5c6370
+  accentFg:    `${ESC}[38;2;97;175;239m`,  // #61afef
+  matchFg:     `${ESC}[38;2;229;192;123m`, // #e5c07b
+  greenFg:     `${ESC}[38;2;152;195;121m`, // #98c379
+  redFg:       `${ESC}[38;2;224;108;117m`, // #e06c75
+  otherMatchFg:`${ESC}[38;2;92;99;112m`,   // #5c6370
+  hlMatch:     `${ESC}[48;2;62;68;82m${ESC}[38;2;229;192;123m`,
+  hlCurrent:   `${ESC}[48;2;229;192;123m${ESC}[38;2;0;0;0m`,
+};
+
+const LIGHT = {
+  chromeBg:    `${ESC}[48;2;228;228;228m`, // #e4e4e4
+  badge:       `${ESC}[38;2;166;38;164m`,  // #a626a4  — magenta badge
+  titleFg:     `${ESC}[30m`,               // black — filename
+  dimFg:       `${ESC}[38;2;105;108;119m`, // #696c77
+  accentFg:    `${ESC}[38;2;64;120;242m`,  // #4078f2
+  matchFg:     `${ESC}[38;2;152;104;1m`,   // #986801
+  greenFg:     `${ESC}[38;2;80;161;79m`,   // #50a14f
+  redFg:       `${ESC}[38;2;228;86;73m`,   // #e45649
+  otherMatchFg:`${ESC}[38;2;105;108;119m`, // #696c77
+  hlMatch:     `${ESC}[48;2;209;226;255m${ESC}[38;2;64;120;242m`,
+  hlCurrent:   `${ESC}[48;2;64;120;242m${ESC}[38;2;255;255;255m`,
+};
+
+let C = { ...DARK,
   bold:        `${ESC}[1m`,
   dim:         `${ESC}[2m`,
   italic:      `${ESC}[3m`,
@@ -42,9 +61,9 @@ function plen(s) { return s.replace(/\x1B\[[0-9;]*m/g, "").length; }
 
 // Highlight all occurrences of `query` within an ANSI-coloured line.
 // Walks the string char-by-char so ANSI escape sequences don't shift offsets.
-const HL_MATCH   = `${ESC}[48;2;62;68;82m${ESC}[38;2;229;192;123m`; // other matches
-const HL_CURRENT = `${ESC}[48;2;229;192;123m${ESC}[38;2;0;0;0m`;    // current match
-const HL_OFF     = `${ESC}[49m${ESC}[39m`;
+let HL_MATCH   = C.hlMatch;
+let HL_CURRENT = C.hlCurrent;
+const HL_OFF   = `${ESC}[49m${ESC}[39m`;
 
 function highlightInLine(line, query, isCurrent) {
   if (!query) return line;
@@ -110,7 +129,14 @@ function copyText(text) {
   catch { /* not on macOS or pbcopy unavailable */ }
 }
 
-export function launch(title, lines) {
+export function launch(title, lines, theme) {
+  // Apply theme to TUI chrome
+  if (theme === "light") {
+    const pal = LIGHT;
+    Object.assign(C, pal);
+    HL_MATCH = pal.hlMatch;
+    HL_CURRENT = pal.hlCurrent;
+  }
   // Viewport state
   let offset = 0;
 

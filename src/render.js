@@ -4,44 +4,96 @@ import { highlight as cliHighlight } from "cli-highlight";
 
 const chalk = new Chalk({ level: 3 });
 
-// ─── One Dark palette ──────────────────────────────────────────────────────────
-const c = {
-  // Headings
-  h1:       chalk.hex("#c678dd").bold,          // purple
-  h2:       chalk.hex("#61afef").bold,          // blue
-  h3:       chalk.hex("#98c379").bold,          // green
-  h4:       chalk.hex("#e5c07b").bold,          // yellow
-  h5:       chalk.hex("#56b6c2"),               // cyan
-  h6:       chalk.dim,
-  // Inline
-  strong:   chalk.bold.white,
-  em:       chalk.italic,
-  del:      chalk.strikethrough.dim,
-  code:     chalk.hex("#e5c07b").bgHex("#2a2a2a"), // amber on dark bg
-  link:     chalk.hex("#61afef").underline,
-  image:    chalk.dim,
-  // Code block
-  border:   chalk.dim,
-  codeLang: chalk.hex("#e5c07b").dim,
-  // Blockquote
-  bqBar:    chalk.hex("#e5c07b"),
-  bqText:   chalk.dim.italic,
-  // Lists
-  bullet0:  chalk.hex("#61afef"),              // blue ● depth 0
-  bullet1:  chalk.dim,                         // dim ○ depth 1
-  bullet2:  chalk.dim,                         // very dim ‣ depth 2+
-  ordered:  chalk.hex("#56b6c2"),              // cyan number
-  taskDone: chalk.hex("#98c379"),              // green ☑
-  taskTodo: chalk.dim,                         // dim ☐
-  // Table
-  tableBorder: chalk.dim,
-  tableHead:   chalk.hex("#61afef").bold,
-  tableCell:   chalk.reset,
-  // HR
-  hr:       chalk.dim,
-  // Paragraph text
-  fg:       chalk.reset,
-};
+// ─── Color palettes ─────────────────────────────────────────────────────────────
+
+function darkPalette() {
+  return {
+    // Headings
+    h1:       chalk.hex("#c678dd").bold,          // purple
+    h2:       chalk.hex("#61afef").bold,          // blue
+    h3:       chalk.hex("#98c379").bold,          // green
+    h4:       chalk.hex("#e5c07b").bold,          // yellow
+    h5:       chalk.hex("#56b6c2"),               // cyan
+    h6:       chalk.dim,
+    // Inline
+    strong:   chalk.bold.white,
+    em:       chalk.italic,
+    del:      chalk.strikethrough.dim,
+    code:     chalk.hex("#e5c07b").bgHex("#2a2a2a"), // amber on dark bg
+    link:     chalk.hex("#61afef").underline,
+    image:    chalk.dim,
+    badge:    chalk.hex("#abb2bf"),
+    // Code block
+    border:   chalk.dim,
+    codeLang: chalk.hex("#e5c07b").dim,
+    // Blockquote
+    bqBar:    chalk.hex("#e5c07b"),
+    bqText:   chalk.dim.italic,
+    // Lists
+    bullet0:  chalk.hex("#61afef"),              // blue ● depth 0
+    bullet1:  chalk.dim,                         // dim ○ depth 1
+    bullet2:  chalk.dim,                         // very dim ‣ depth 2+
+    ordered:  chalk.hex("#56b6c2"),              // cyan number
+    taskDone: chalk.hex("#98c379"),              // green ☑
+    taskTodo: chalk.dim,                         // dim ☐
+    // Table
+    tableBorder: chalk.dim,
+    tableHead:   chalk.hex("#61afef").bold,
+    tableCell:   chalk.reset,
+    // HR
+    hr:       chalk.dim,
+    // Paragraph text
+    fg:       chalk.reset,
+  };
+}
+
+function lightPalette() {
+  return {
+    // Headings
+    h1:       chalk.hex("#a626a4").bold,          // magenta
+    h2:       chalk.hex("#4078f2").bold,          // blue
+    h3:       chalk.hex("#50a14f").bold,          // green
+    h4:       chalk.hex("#c18401").bold,          // dark yellow
+    h5:       chalk.hex("#0184bc"),               // teal
+    h6:       chalk.hex("#696c77"),               // gray
+    // Inline
+    strong:   chalk.bold.black,
+    em:       chalk.italic,
+    del:      chalk.strikethrough.hex("#696c77"),
+    code:     chalk.hex("#986801").bgHex("#e8e8e8"), // brown on light gray
+    link:     chalk.hex("#4078f2").underline,
+    image:    chalk.hex("#696c77"),
+    badge:    chalk.hex("#383a42"),
+    // Code block
+    border:   chalk.hex("#a0a1a7"),
+    codeLang: chalk.hex("#986801"),
+    // Blockquote
+    bqBar:    chalk.hex("#c18401"),
+    bqText:   chalk.hex("#696c77").italic,
+    // Lists
+    bullet0:  chalk.hex("#4078f2"),              // blue ● depth 0
+    bullet1:  chalk.hex("#a0a1a7"),              // gray ○ depth 1
+    bullet2:  chalk.hex("#a0a1a7"),              // gray ‣ depth 2+
+    ordered:  chalk.hex("#0184bc"),              // teal number
+    taskDone: chalk.hex("#50a14f"),              // green ☑
+    taskTodo: chalk.hex("#a0a1a7"),              // gray ☐
+    // Table
+    tableBorder: chalk.hex("#a0a1a7"),
+    tableHead:   chalk.hex("#4078f2").bold,
+    tableCell:   chalk.reset,
+    // HR
+    hr:       chalk.hex("#a0a1a7"),
+    // Paragraph text
+    fg:       chalk.reset,
+  };
+}
+
+let c = darkPalette();
+
+/** Set the active color palette. Call before renderTokens(). */
+export function setTheme(theme) {
+  c = theme === "light" ? lightPalette() : darkPalette();
+}
 
 const MARGIN = "  "; // 2-space left margin
 
@@ -124,7 +176,7 @@ function inline(tokens) {
           if (tok.tokens?.length === 1 && tok.tokens[0].type === "image") {
             const alt = tok.tokens[0].text || tok.tokens[0].alt || "";
             if (alt) {
-              const badge = chalk.dim("[") + chalk.hex("#abb2bf")(alt) + chalk.dim("]");
+              const badge = chalk.dim("[") + c.badge(alt) + chalk.dim("]");
               return `\x1B]8;;${href}\x1B\\${badge}\x1B]8;;\x1B\\`;
             }
           }
