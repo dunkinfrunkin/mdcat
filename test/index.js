@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { marked } from "marked";
-import { renderTokens } from "../src/render.js";
+import { marked, Marked } from "marked";
+import { renderTokens, setTheme } from "../src/render.js";
+import { detectTheme, themeFromArgs, stripThemeArgs } from "../src/theme.js";
 
 marked.use({ gfm: true });
 
@@ -549,4 +550,94 @@ Last paragraph with &amp; entities &lt;like&gt; these.
   assert.ok(plain.includes("─"), "HR");
   assert.ok(plain.includes("& entities"), "decoded &amp;");
   assert.ok(plain.includes("<like>"), "decoded &lt; &gt;");
+});
+
+// ─── Web mode (Marked constructor) ───────────────────────────────────────────
+
+test("Marked constructor exists and creates a working instance", () => {
+  assert.equal(typeof Marked, "function", "Marked should be a constructor");
+  const instance = new Marked({ gfm: true });
+  assert.ok(instance, "should create a Marked instance");
+});
+
+test("Marked instance parses markdown to HTML", () => {
+  const instance = new Marked({ gfm: true });
+  const html = instance.parse("**bold**");
+  assert.ok(html.includes("<strong>bold</strong>"), `Expected <strong>, got: ${html}`);
+});
+
+test("Marked instance supports custom renderer", () => {
+  const instance = new Marked({ gfm: true });
+  instance.use({
+    renderer: {
+      html(token) {
+        return token.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      },
+    },
+  });
+  const html = instance.parse("<div>raw</div>");
+  assert.ok(html.includes("&lt;div&gt;"), `HTML should be escaped, got: ${html}`);
+});
+
+test("Marked instance renders tables to HTML", () => {
+  const instance = new Marked({ gfm: true });
+  const html = instance.parse("| A | B |\n|---|---|\n| 1 | 2 |");
+  assert.ok(html.includes("<table>"), "should produce <table>");
+  assert.ok(html.includes("<th>A</th>"), "should have header A");
+  assert.ok(html.includes("<td>1</td>"), "should have cell 1");
+});
+
+// ─── Theme detection & switching ─────────────────────────────────────────────
+
+test("themeFromArgs returns 'light' for --light", () => {
+  assert.equal(themeFromArgs(["--light", "file.md"]), "light");
+});
+
+test("themeFromArgs returns 'dark' for --dark", () => {
+  assert.equal(themeFromArgs(["--dark", "file.md"]), "dark");
+});
+
+test("themeFromArgs returns null when no theme flag", () => {
+  assert.equal(themeFromArgs(["file.md"]), null);
+});
+
+test("stripThemeArgs removes --light and --dark", () => {
+  assert.deepEqual(stripThemeArgs(["--light", "file.md"]), ["file.md"]);
+  assert.deepEqual(stripThemeArgs(["--dark", "file.md"]), ["file.md"]);
+  assert.deepEqual(stripThemeArgs(["file.md"]), ["file.md"]);
+});
+
+test("detectTheme respects MDCAT_THEME env var", () => {
+  const orig = process.env.MDCAT_THEME;
+  process.env.MDCAT_THEME = "light";
+  assert.equal(detectTheme(), "light");
+  process.env.MDCAT_THEME = "dark";
+  assert.equal(detectTheme(), "dark");
+  if (orig !== undefined) process.env.MDCAT_THEME = orig;
+  else delete process.env.MDCAT_THEME;
+});
+
+test("setTheme('light') changes render output colors", () => {
+  setTheme("light");
+  const lines = render("# Hello");
+  const raw = lines.join("");
+  // Light theme uses #a626a4 for H1 → ANSI 38;2;166;38;164
+  assert.ok(raw.includes("38;2;166;38;164"), "light theme should use magenta H1");
+  // Restore dark theme
+  setTheme("dark");
+});
+
+test("setTheme('dark') restores dark palette", () => {
+  setTheme("dark");
+  const lines = render("# Hello");
+  const raw = lines.join("");
+  // Dark theme uses #c678dd for H1 → ANSI 38;2;198;120;221
+  assert.ok(raw.includes("38;2;198;120;221"), "dark theme should use purple H1");
+});
+
+test("light theme renders all block types without crashing", () => {
+  setTheme("light");
+  const md = "# H1\n## H2\n### H3\n\nText **bold** `code`\n\n> quote\n\n- item\n\n| A |\n|---|\n| 1 |\n\n---";
+  assert.doesNotThrow(() => render(md));
+  setTheme("dark");
 });

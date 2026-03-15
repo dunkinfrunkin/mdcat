@@ -105,7 +105,7 @@ npm install
 npm test
 ```
 
-All PRs must pass `npm test` (68 tests).
+All PRs must pass `npm test` (80 tests).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
