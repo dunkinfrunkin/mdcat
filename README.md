@@ -2,7 +2,8 @@
 
 [![npm](https://img.shields.io/npm/v/@dunkinfrunkin/mdcat?color=61afef&label=npm)](https://www.npmjs.com/package/@dunkinfrunkin/mdcat)
 [![license](https://img.shields.io/badge/license-MIT-98c379)](LICENSE)
-[![node](https://img.shields.io/badge/node-%3E%3D18-e5c07b)](package.json)
+[![node](https://img.shields.io/badge/node-%3E%3D20-e5c07b)](package.json)
+[![CI](https://github.com/dunkinfrunkin/mdcat/actions/workflows/ci.yml/badge.svg)](https://github.com/dunkinfrunkin/mdcat/actions/workflows/ci.yml)
 [![site](https://img.shields.io/badge/site-mdcat.frankchan.dev-61afef)](https://mdcat.frankchan.dev)
 
 **Terminal pager for Markdown.** Full colour, syntax highlighting, incremental search, mouse support — zero config.
