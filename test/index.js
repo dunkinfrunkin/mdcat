@@ -4,6 +4,7 @@ import { marked, Marked } from "marked";
 import { renderTokens, setTheme } from "../src/render.js";
 import { detectTheme, themeFromArgs, stripThemeArgs } from "../src/theme.js";
 import { launch } from "../src/tui.js";
+import { concatFiles } from "../src/concat.js";
 
 marked.use({ gfm: true });
 
@@ -726,4 +727,69 @@ test("launch function accepts opts parameter with lineNumbers", () => {
   // Verify the function signature accepts 4 params without crashing
   assert.equal(typeof launch, "function");
   assert.ok(launch.length >= 3, "launch should accept at least 3 parameters");
+});
+
+// ─── Multi-file concatenation ─────────────────────────────────────────────────
+
+test("concatFiles with single file returns its name and content unchanged", () => {
+  const result = concatFiles([{ name: "README.md", content: "# Hello" }]);
+  assert.equal(result.title, "README.md");
+  assert.equal(result.content, "# Hello");
+});
+
+test("concatFiles with empty array returns empty title and content", () => {
+  const result = concatFiles([]);
+  assert.equal(result.title, "");
+  assert.equal(result.content, "");
+});
+
+test("concatFiles with two files returns '2 files' title", () => {
+  const result = concatFiles([
+    { name: "a.md", content: "AAA" },
+    { name: "b.md", content: "BBB" },
+  ]);
+  assert.equal(result.title, "2 files");
+});
+
+test("concatFiles with multiple files inserts filename headings", () => {
+  const result = concatFiles([
+    { name: "a.md", content: "AAA" },
+    { name: "b.md", content: "BBB" },
+  ]);
+  assert.ok(result.content.includes("## a.md"), "should contain heading for a.md");
+  assert.ok(result.content.includes("## b.md"), "should contain heading for b.md");
+});
+
+test("concatFiles with multiple files inserts HR separators between files", () => {
+  const result = concatFiles([
+    { name: "a.md", content: "AAA" },
+    { name: "b.md", content: "BBB" },
+    { name: "c.md", content: "CCC" },
+  ]);
+  assert.equal(result.title, "3 files");
+  // There should be exactly 2 separators between 3 files
+  const separators = result.content.match(/\n\n---\n\n/g);
+  assert.equal(separators.length, 2, "should have 2 HR separators between 3 files");
+});
+
+test("concatFiles preserves original file content", () => {
+  const content1 = "# Title\n\nSome paragraph.";
+  const content2 = "- item 1\n- item 2";
+  const result = concatFiles([
+    { name: "first.md", content: content1 },
+    { name: "second.md", content: content2 },
+  ]);
+  assert.ok(result.content.includes(content1), "first file content should be preserved");
+  assert.ok(result.content.includes(content2), "second file content should be preserved");
+});
+
+test("concatFiles multi-file output renders without crashing", () => {
+  const result = concatFiles([
+    { name: "a.md", content: "# Hello\n\nWorld." },
+    { name: "b.md", content: "## Goodbye\n\n- item" },
+  ]);
+  assert.doesNotThrow(() => render(result.content));
+  const plain = renderPlain(result.content);
+  assert.ok(plain.includes("World"), "first file content should render");
+  assert.ok(plain.includes("item"), "second file content should render");
 });

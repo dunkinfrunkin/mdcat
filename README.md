@@ -33,6 +33,7 @@ npx @dunkinfrunkin/mdcat README.md
 
 ```sh
 mdcat README.md                  # open a file
+mdcat file1.md file2.md file3.md # view multiple files
 mdcat --web README.md            # render and open in browser
 mdcat -p README.md               # plain text output (no TUI, no ANSI)
 mdcat -n README.md               # show line numbers
@@ -109,7 +110,7 @@ npm install
 npm test
 ```
 
-All PRs must pass `npm test` (90 tests).
+All PRs must pass `npm test` (97 tests).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
