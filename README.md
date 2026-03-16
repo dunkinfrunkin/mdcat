@@ -34,6 +34,7 @@ npx @dunkinfrunkin/mdcat README.md
 ```sh
 mdcat README.md                  # open a file
 mdcat --web README.md            # render and open in browser
+mdcat -n README.md               # show line numbers
 mdcat --light README.md          # force light theme
 mdcat --dark README.md           # force dark theme
 cat CHANGELOG.md | mdcat         # pipe from stdin
@@ -48,6 +49,7 @@ mdcat --version                  # show version
 |-----|--------|
 | `q` | Quit |
 | `y` | Copy visible page to clipboard |
+| `L` | Toggle line numbers |
 | `M` | Toggle mouse (off = free text selection) |
 | `j` / `k` | Scroll down / up |
 | `Space` / `b` | Page down / up |
@@ -106,7 +108,7 @@ npm install
 npm test
 ```
 
-All PRs must pass `npm test` (80 tests).
+All PRs must pass `npm test` (85 tests).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
