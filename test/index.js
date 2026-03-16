@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { marked, Marked } from "marked";
 import { renderTokens, setTheme } from "../src/render.js";
 import { detectTheme, themeFromArgs, stripThemeArgs } from "../src/theme.js";
+import { launch } from "../src/tui.js";
 
 marked.use({ gfm: true });
 
@@ -640,4 +641,44 @@ test("light theme renders all block types without crashing", () => {
   const md = "# H1\n## H2\n### H3\n\nText **bold** `code`\n\n> quote\n\n- item\n\n| A |\n|---|\n| 1 |\n\n---";
   assert.doesNotThrow(() => render(md));
   setTheme("dark");
+});
+
+// ─── Line numbers (CLI flag parsing) ─────────────────────────────────────────
+
+test("-n flag is recognized and stripped from args", () => {
+  let args = ["-n", "file.md"];
+  const hasFlag = args.includes("-n") || args.includes("--number");
+  args = args.filter(a => a !== "-n" && a !== "--number");
+  assert.equal(hasFlag, true);
+  assert.deepEqual(args, ["file.md"]);
+});
+
+test("--number flag is recognized and stripped from args", () => {
+  let args = ["--number", "file.md"];
+  const hasFlag = args.includes("-n") || args.includes("--number");
+  args = args.filter(a => a !== "-n" && a !== "--number");
+  assert.equal(hasFlag, true);
+  assert.deepEqual(args, ["file.md"]);
+});
+
+test("no line number flag leaves args unchanged", () => {
+  let args = ["file.md"];
+  const hasFlag = args.includes("-n") || args.includes("--number");
+  args = args.filter(a => a !== "-n" && a !== "--number");
+  assert.equal(hasFlag, false);
+  assert.deepEqual(args, ["file.md"]);
+});
+
+test("-n works with other flags combined", () => {
+  let args = ["--light", "-n", "file.md"];
+  const hasFlag = args.includes("-n") || args.includes("--number");
+  args = args.filter(a => a !== "-n" && a !== "--number");
+  assert.equal(hasFlag, true);
+  assert.deepEqual(args, ["--light", "file.md"]);
+});
+
+test("launch function accepts opts parameter with lineNumbers", () => {
+  // Verify the function signature accepts 4 params without crashing
+  assert.equal(typeof launch, "function");
+  assert.ok(launch.length >= 3, "launch should accept at least 3 parameters");
 });

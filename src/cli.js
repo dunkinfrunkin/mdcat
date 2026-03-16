@@ -32,6 +32,7 @@ if (args[0] === "--help" || args[0] === "-h") {
   console.log(`  mdcat ${dim("--doc <file.md>")}   ${dim("# export to .docx")}`);
   console.log(`  mdcat ${dim("--light")}           ${dim("# force light theme")}`);
   console.log(`  mdcat ${dim("--dark")}            ${dim("# force dark theme")}`);
+  console.log(`  mdcat ${dim("-n, --number")}      ${dim("# show line numbers")}`);
   console.log(`  cat file.md ${dim("|")} mdcat\n`);
   console.log(`${bold("Theme:")}`);
   console.log(`  Auto-detects terminal theme. Override with ${blue("--light")} / ${blue("--dark")}`);
@@ -40,7 +41,7 @@ if (args[0] === "--help" || args[0] === "-h") {
   console.log(`  ${blue("/")}          search          ${blue("n/N")}   next/prev match`);
   console.log(`  ${blue("j/k")} ${dim("↑↓")}    scroll line     ${blue("space/b")} page down/up`);
   console.log(`  ${blue("d/u")}        half page       ${blue("g/G")}   top/bottom`);
-  console.log(`  ${blue("q")}          quit\n`);
+  console.log(`  ${blue("L")}          line numbers    ${blue("q")}     quit\n`);
   process.exit(0);
 }
 
@@ -48,6 +49,10 @@ if (args[0] === "--help" || args[0] === "-h") {
 const activeTheme = themeFromArgs(args) ?? detectTheme();
 args = stripThemeArgs(args);
 setTheme(activeTheme);
+
+// Line numbers flag
+const showLineNumbers = args.includes("-n") || args.includes("--number");
+args = args.filter(a => a !== "-n" && a !== "--number");
 
 if (args[0] === "--version" || args[0] === "-v") {
   console.log(`${CAT}  ${bold("mdcat")} ${dim(`v${pkg.version}`)}`);
@@ -128,7 +133,7 @@ function runTUI(title, content) {
   const cols = Math.min(termCols, MAX_COLS);
   const tokens = marked.lexer(content);
   const lines = renderTokens(tokens, cols, termCols > MAX_COLS ? termCols : undefined);
-  launch(title, lines, activeTheme);
+  launch(title, lines, activeTheme, { lineNumbers: showLineNumbers });
 }
 
 // --web / --doc flags

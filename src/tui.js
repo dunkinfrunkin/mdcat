@@ -129,7 +129,7 @@ function copyText(text) {
   catch { /* not on macOS or pbcopy unavailable */ }
 }
 
-export function launch(title, lines, theme) {
+export function launch(title, lines, theme, opts = {}) {
   // Apply theme to TUI chrome
   if (theme === "light") {
     const pal = LIGHT;
@@ -137,6 +137,12 @@ export function launch(title, lines, theme) {
     HL_MATCH = pal.hlMatch;
     HL_CURRENT = pal.hlCurrent;
   }
+
+  // Line numbers
+  let lineNumbers = opts.lineNumbers ?? false;
+  const totalDigits = String(lines.length).length;
+  const gutterW = totalDigits + 2; // "  N " width
+
   // Viewport state
   let offset = 0;
 
@@ -225,10 +231,16 @@ export function launch(title, lines, theme) {
   }
 
   function gutterFor(absLine) {
-    if (mode === "normal" || !searchQuery) return "  ";
-    if (matchLines[matchIdx] === absLine)   return `${C.matchFg}▶${RESET} `;
-    if (matchSet.has(absLine))              return `${C.otherMatchFg}›${RESET} `;
-    return "  ";
+    let prefix = "";
+    if (lineNumbers) {
+      const num = String(absLine + 1).padStart(totalDigits);
+      prefix = `${C.dimFg}${num}${RESET} `;
+    }
+
+    if (mode === "normal" || !searchQuery) return prefix || "  ";
+    if (matchLines[matchIdx] === absLine)   return `${prefix}${C.matchFg}▶${RESET} `;
+    if (matchSet.has(absLine))              return `${prefix}${C.otherMatchFg}›${RESET} `;
+    return prefix || "  ";
   }
 
   function statusBar(w) {
@@ -274,9 +286,9 @@ export function launch(title, lines, theme) {
 
     const mouseHint = mouseEnabled ? "" : `${C.matchFg} [select mode]${RESET}`;
     const mouseW    = mouseEnabled ? 0 : " [select mode]".length;
-    const hints  = `${C.dim} q  y  /  j k  ↑↓  space  g G  M${RESET}`;
+    const hints  = `${C.dim} q  y  /  j k  ↑↓  space  g G  L  M${RESET}`;
     const right  = `${C.dimFg} ${pct} ${RESET}`;
-    const hintsW = " q  y  /  j k  ↑↓  space  g G  M".length;
+    const hintsW = " q  y  /  j k  ↑↓  space  g G  L  M".length;
     const rightW = ` ${pct} `.length;
     const gap    = Math.max(0, w - hintsW - mouseW - rightW);
     return `${C.chromeBg}${hints}${mouseHint}${" ".repeat(gap)}${right}${RESET}`;
@@ -367,6 +379,10 @@ export function launch(title, lines, theme) {
         copyText(text);
         showToast("Copied to clipboard"); return;
       }
+
+      case "L":
+        lineNumbers = !lineNumbers;
+        showToast(lineNumbers ? "Line numbers on" : "Line numbers off"); return;
 
       case "M":
         mouseEnabled = !mouseEnabled;
