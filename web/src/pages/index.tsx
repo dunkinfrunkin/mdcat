@@ -220,6 +220,11 @@ const FEATURES = [
     code: 'mdcat -p README.md | grep install\nmdcat --plain NOTES.md | pbcopy',
   },
   {
+    title: 'Git diff gutter',
+    desc: 'See which lines changed at a glance. Green + for added, yellow ~ for modified, red - for deleted. Works automatically in git repos.',
+    code: '+ added line\n~ modified line\n- deleted line',
+  },
+  {
     title: 'Zero config',
     desc: 'No config files, no env vars, no setup. Pipe or open — it just works.',
     code: 'npx @dunkinfrunkin/mdcat file.md\ncurl … | npx @dunkinfrunkin/mdcat',

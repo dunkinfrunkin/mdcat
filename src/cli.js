@@ -9,6 +9,7 @@ import { launch } from "./tui.js";
 import { toDocx } from "./docx.js";
 import { detectTheme, themeFromArgs, stripThemeArgs } from "./theme.js";
 import { concatFiles } from "./concat.js";
+import { getDiffMap, mapDiffToRendered } from "./git.js";
 
 marked.use({ gfm: true });
 
@@ -150,12 +151,20 @@ function openInBrowser(title, content) {
   catch { console.error(`mdcat: could not open browser`); process.exit(1); }
 }
 
-function runTUI(title, content) {
+function runTUI(title, content, filePath) {
   const termCols = process.stdout.columns || 80;
   const cols = Math.min(termCols, MAX_COLS);
   const tokens = marked.lexer(content);
   const lines = renderTokens(tokens, cols, termCols > MAX_COLS ? termCols : undefined);
-  launch(title, lines, activeTheme, { lineNumbers: showLineNumbers });
+
+  let diffMap = new Map();
+  if (filePath) {
+    const sourceLineCount = content.split("\n").length;
+    const sourceDiffMap = getDiffMap(filePath, sourceLineCount);
+    diffMap = mapDiffToRendered(sourceDiffMap, sourceLineCount, lines.length);
+  }
+
+  launch(title, lines, activeTheme, { lineNumbers: showLineNumbers, diffMap });
 }
 
 // --web / --doc flags
@@ -205,5 +214,5 @@ if (!process.stdin.isTTY && fileArgs.length === 0) {
   if (docMode) exportDocx(title, content);
   else if (webMode) openInBrowser(title, content);
   else if (plainMode) runPlain(content);
-  else runTUI(title, content);
+  else runTUI(title, content, filePath);
 }

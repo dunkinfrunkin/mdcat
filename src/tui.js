@@ -143,6 +143,9 @@ export function launch(title, lines, theme, opts = {}) {
   const totalDigits = String(lines.length).length;
   const gutterW = totalDigits + 2; // "  N " width
 
+  // Git diff map (rendered line index → "added" | "modified" | "deleted")
+  const diffMap = opts.diffMap ?? new Map();
+
   // Viewport state
   let offset = 0;
 
@@ -230,6 +233,15 @@ export function launch(title, lines, theme, opts = {}) {
     return `${C.chromeBg}${left}${C.dimFg}${" ".repeat(gap)}${cat}${RESET}`;
   }
 
+  function diffMarkerFor(absLine) {
+    const type = diffMap.get(absLine);
+    if (!type) return "";
+    if (type === "added")    return `${C.greenFg}+${RESET}`;
+    if (type === "modified") return `${C.matchFg}~${RESET}`;
+    if (type === "deleted")  return `${C.redFg}-${RESET}`;
+    return "";
+  }
+
   function gutterFor(absLine) {
     let prefix = "";
     if (lineNumbers) {
@@ -237,10 +249,13 @@ export function launch(title, lines, theme, opts = {}) {
       prefix = `${C.dimFg}${num}${RESET} `;
     }
 
-    if (mode === "normal" || !searchQuery) return prefix || "  ";
-    if (matchLines[matchIdx] === absLine)   return `${prefix}${C.matchFg}▶${RESET} `;
-    if (matchSet.has(absLine))              return `${prefix}${C.otherMatchFg}›${RESET} `;
-    return prefix || "  ";
+    // Diff gutter marker (single char column before content)
+    const diff = diffMap.size > 0 ? (diffMarkerFor(absLine) || " ") : "";
+
+    if (mode === "normal" || !searchQuery) return `${prefix}${diff}${diff ? " " : prefix ? "" : "  "}`;
+    if (matchLines[matchIdx] === absLine)   return `${prefix}${diff ? diff + " " : ""}${C.matchFg}▶${RESET} `;
+    if (matchSet.has(absLine))              return `${prefix}${diff ? diff + " " : ""}${C.otherMatchFg}›${RESET} `;
+    return `${prefix}${diff}${diff ? " " : prefix ? "" : "  "}`;
   }
 
   function statusBar(w) {
