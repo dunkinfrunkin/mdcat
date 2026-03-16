@@ -8,6 +8,7 @@ import { renderTokens, setTheme } from "./render.js";
 import { launch } from "./tui.js";
 import { toDocx } from "./docx.js";
 import { detectTheme, themeFromArgs, stripThemeArgs } from "./theme.js";
+import { concatFiles } from "./concat.js";
 
 marked.use({ gfm: true });
 
@@ -27,7 +28,7 @@ if (args[0] === "--help" || args[0] === "-h") {
   console.log(`\n${CAT}  ${bold("mdcat")} ${dim(`v${pkg.version}`)}`);
   console.log(`${dim("         markdown pager for your terminal")}\n`);
   console.log(`${bold("Usage:")}`);
-  console.log(`  mdcat ${dim("<file.md>")}`);
+  console.log(`  mdcat ${dim("<file.md> [file2.md ...]")}`);
   console.log(`  mdcat ${dim("--web <file.md>")}   ${dim("# open in browser")}`);
   console.log(`  mdcat ${dim("--doc <file.md>")}   ${dim("# export to .docx")}`);
   console.log(`  mdcat ${dim("-p, --plain")}       ${dim("# plain output (no TUI, no ANSI)")}`);
@@ -183,18 +184,24 @@ if (!process.stdin.isTTY && fileArgs.length === 0) {
     else runTUI("stdin", input);
   });
 } else if (fileArgs.length === 0) {
-  console.error("Usage: mdcat <file.md>");
+  console.error("Usage: mdcat <file.md> [file2.md ...]");
   process.exit(1);
 } else {
-  const filePath = resolve(fileArgs[0]);
-  let content;
-  try {
-    content = readFileSync(filePath, "utf8");
-  } catch (err) {
-    console.error(`mdcat: ${fileArgs[0]}: ${err.code === "ENOENT" ? "No such file" : err.message}`);
-    process.exit(1);
+  const parts = [];
+  for (const arg of fileArgs) {
+    const filePath = resolve(arg);
+    let text;
+    try {
+      text = readFileSync(filePath, "utf8");
+    } catch (err) {
+      console.error(`mdcat: ${arg}: ${err.code === "ENOENT" ? "No such file" : err.message}`);
+      process.exit(1);
+    }
+    parts.push({ name: basename(filePath), content: text });
   }
-  const title = basename(filePath);
+
+  const { title, content } = concatFiles(parts);
+
   if (docMode) exportDocx(title, content);
   else if (webMode) openInBrowser(title, content);
   else if (plainMode) runPlain(content);
