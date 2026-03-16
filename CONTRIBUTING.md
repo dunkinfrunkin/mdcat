@@ -20,7 +20,7 @@ npm install
 npm test
 ```
 
-All 85 tests must pass before submitting. If you add a feature, add a test for it in `test/index.js`.
+All 92 tests must pass before submitting. If you add a feature, add a test for it in `test/index.js`.
 
 ## Project structure
 
@@ -31,7 +31,7 @@ src/
   tui.js      — raw terminal TUI (alternate screen, input, draw loop)
   theme.js    — light/dark theme detection and CLI flag helpers
 test/
-  index.js    — node:test suite (85 tests)
+  index.js    — node:test suite (92 tests)
 web/
   src/        — Docusaurus landing page (mdcat.frankchan.dev)
 ```
