@@ -215,6 +215,11 @@ const FEATURES = [
     code: '[link text](https://example.com)\n→ blue underline, clickable',
   },
   {
+    title: 'Plain text output',
+    desc: 'Use -p / --plain to strip all ANSI styling and skip the TUI. Perfect for piping to grep, pbcopy, or other tools.',
+    code: 'mdcat -p README.md | grep install\nmdcat --plain NOTES.md | pbcopy',
+  },
+  {
     title: 'Zero config',
     desc: 'No config files, no env vars, no setup. Pipe or open — it just works.',
     code: 'npx @dunkinfrunkin/mdcat file.md\ncurl … | npx @dunkinfrunkin/mdcat',

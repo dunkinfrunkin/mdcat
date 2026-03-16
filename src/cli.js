@@ -30,6 +30,7 @@ if (args[0] === "--help" || args[0] === "-h") {
   console.log(`  mdcat ${dim("<file.md>")}`);
   console.log(`  mdcat ${dim("--web <file.md>")}   ${dim("# open in browser")}`);
   console.log(`  mdcat ${dim("--doc <file.md>")}   ${dim("# export to .docx")}`);
+  console.log(`  mdcat ${dim("-p, --plain")}       ${dim("# plain output (no TUI, no ANSI)")}`);
   console.log(`  mdcat ${dim("--light")}           ${dim("# force light theme")}`);
   console.log(`  mdcat ${dim("--dark")}            ${dim("# force dark theme")}`);
   console.log(`  mdcat ${dim("-n, --number")}      ${dim("# show line numbers")}`);
@@ -50,6 +51,10 @@ const activeTheme = themeFromArgs(args) ?? detectTheme();
 args = stripThemeArgs(args);
 setTheme(activeTheme);
 
+// Plain mode flag
+const plainMode = args.includes("-p") || args.includes("--plain");
+args = args.filter(a => a !== "-p" && a !== "--plain");
+
 // Line numbers flag
 const showLineNumbers = args.includes("-n") || args.includes("--number");
 args = args.filter(a => a !== "-n" && a !== "--number");
@@ -60,6 +65,22 @@ if (args[0] === "--version" || args[0] === "-v") {
 }
 
 const MAX_COLS = 100;
+
+/** Strip ANSI SGR sequences and OSC 8 hyperlinks for plain text output. */
+function stripAnsi(s) {
+  return s
+    .replace(/\x1B\]8;;.*?\x1B\\/gs, "")
+    .replace(/\x1B\[[0-9;]*m/g, "");
+}
+
+function runPlain(content) {
+  const cols = Math.min(process.stdout.columns || 80, MAX_COLS);
+  const tokens = marked.lexer(content);
+  const lines = renderTokens(tokens, cols);
+  for (const line of lines) {
+    console.log(stripAnsi(line));
+  }
+}
 
 function escapeHtml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -158,6 +179,7 @@ if (!process.stdin.isTTY && fileArgs.length === 0) {
   process.stdin.on("end", () => {
     if (docMode) exportDocx("stdin", input);
     else if (webMode) openInBrowser("stdin", input);
+    else if (plainMode) runPlain(input);
     else runTUI("stdin", input);
   });
 } else if (fileArgs.length === 0) {
@@ -175,5 +197,6 @@ if (!process.stdin.isTTY && fileArgs.length === 0) {
   const title = basename(filePath);
   if (docMode) exportDocx(title, content);
   else if (webMode) openInBrowser(title, content);
+  else if (plainMode) runPlain(content);
   else runTUI(title, content);
 }

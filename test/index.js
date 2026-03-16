@@ -677,6 +677,51 @@ test("-n works with other flags combined", () => {
   assert.deepEqual(args, ["--light", "file.md"]);
 });
 
+// ─── Plain mode (CLI flag parsing) ────────────────────────────────────────────
+
+test("-p flag is recognized and stripped from args", () => {
+  let args = ["-p", "file.md"];
+  const hasFlag = args.includes("-p") || args.includes("--plain");
+  args = args.filter(a => a !== "-p" && a !== "--plain");
+  assert.equal(hasFlag, true);
+  assert.deepEqual(args, ["file.md"]);
+});
+
+test("--plain flag is recognized and stripped from args", () => {
+  let args = ["--plain", "file.md"];
+  const hasFlag = args.includes("-p") || args.includes("--plain");
+  args = args.filter(a => a !== "-p" && a !== "--plain");
+  assert.equal(hasFlag, true);
+  assert.deepEqual(args, ["file.md"]);
+});
+
+test("no plain flag leaves args unchanged", () => {
+  let args = ["file.md"];
+  const hasFlag = args.includes("-p") || args.includes("--plain");
+  args = args.filter(a => a !== "-p" && a !== "--plain");
+  assert.equal(hasFlag, false);
+  assert.deepEqual(args, ["file.md"]);
+});
+
+test("-p works with other flags combined", () => {
+  let args = ["--dark", "-p", "-n", "file.md"];
+  const hasPlain = args.includes("-p") || args.includes("--plain");
+  args = args.filter(a => a !== "-p" && a !== "--plain");
+  const hasNumber = args.includes("-n") || args.includes("--number");
+  args = args.filter(a => a !== "-n" && a !== "--number");
+  assert.equal(hasPlain, true);
+  assert.equal(hasNumber, true);
+  assert.deepEqual(args, ["--dark", "file.md"]);
+});
+
+test("--plain flag does not conflict with --web or --doc", () => {
+  let args = ["--plain", "--web", "file.md"];
+  const hasPlain = args.includes("-p") || args.includes("--plain");
+  args = args.filter(a => a !== "-p" && a !== "--plain");
+  assert.equal(hasPlain, true);
+  assert.deepEqual(args, ["--web", "file.md"]);
+});
+
 test("launch function accepts opts parameter with lineNumbers", () => {
   // Verify the function signature accepts 4 params without crashing
   assert.equal(typeof launch, "function");
