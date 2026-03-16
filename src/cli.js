@@ -210,9 +210,10 @@ if (!process.stdin.isTTY && fileArgs.length === 0) {
   }
 
   const { title, content } = concatFiles(parts);
+  const primaryPath = parts.length === 1 ? resolve(fileArgs[0]) : undefined;
 
   if (docMode) exportDocx(title, content);
   else if (webMode) openInBrowser(title, content);
   else if (plainMode) runPlain(content);
-  else runTUI(title, content, filePath);
+  else runTUI(title, content, primaryPath);
 }
