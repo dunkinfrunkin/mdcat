@@ -5,6 +5,7 @@ import { renderTokens, setTheme } from "../src/render.js";
 import { detectTheme, themeFromArgs, stripThemeArgs } from "../src/theme.js";
 import { launch } from "../src/tui.js";
 import { concatFiles } from "../src/concat.js";
+import { parseDiff, getDiffMap, mapDiffToRendered } from "../src/git.js";
 
 marked.use({ gfm: true });
 
@@ -792,4 +793,127 @@ test("concatFiles multi-file output renders without crashing", () => {
   const plain = renderPlain(result.content);
   assert.ok(plain.includes("World"), "first file content should render");
   assert.ok(plain.includes("item"), "second file content should render");
+});
+
+// ─── Git diff parsing ─────────────────────────────────────────────────────────
+
+test("parseDiff returns empty map for empty input", () => {
+  const map = parseDiff("");
+  assert.equal(map.size, 0);
+});
+
+test("parseDiff returns empty map for null/undefined input", () => {
+  assert.equal(parseDiff(null).size, 0);
+  assert.equal(parseDiff(undefined).size, 0);
+});
+
+test("parseDiff detects added lines", () => {
+  const diff = [
+    "diff --git a/file.md b/file.md",
+    "index abc..def 100644",
+    "--- a/file.md",
+    "+++ b/file.md",
+    "@@ -1,3 +1,5 @@",
+    " line one",
+    " line two",
+    "+new line three",
+    "+new line four",
+    " line three",
+  ].join("\n");
+
+  const map = parseDiff(diff);
+  assert.equal(map.get(3), "added", "line 3 should be added");
+  assert.equal(map.get(4), "added", "line 4 should be added");
+  assert.equal(map.has(1), false, "unchanged line 1 should not be in map");
+});
+
+test("parseDiff detects modified lines (delete then add)", () => {
+  const diff = [
+    "diff --git a/file.md b/file.md",
+    "index abc..def 100644",
+    "--- a/file.md",
+    "+++ b/file.md",
+    "@@ -1,3 +1,3 @@",
+    " line one",
+    "-old line two",
+    "+new line two",
+    " line three",
+  ].join("\n");
+
+  const map = parseDiff(diff);
+  assert.equal(map.get(2), "modified", "line 2 should be modified");
+  assert.equal(map.has(1), false, "unchanged line 1 should not be in map");
+  assert.equal(map.has(3), false, "unchanged line 3 should not be in map");
+});
+
+test("parseDiff detects deleted lines", () => {
+  const diff = [
+    "diff --git a/file.md b/file.md",
+    "index abc..def 100644",
+    "--- a/file.md",
+    "+++ b/file.md",
+    "@@ -1,4 +1,3 @@",
+    " line one",
+    "-removed line",
+    "-another removed",
+    " line three",
+  ].join("\n");
+
+  const map = parseDiff(diff);
+  // Deletion markers appear at the position in the new file
+  assert.equal(map.get(2), "deleted", "line 2 should show deletion marker");
+});
+
+test("parseDiff handles multiple hunks", () => {
+  const diff = [
+    "diff --git a/file.md b/file.md",
+    "index abc..def 100644",
+    "--- a/file.md",
+    "+++ b/file.md",
+    "@@ -1,3 +1,4 @@",
+    " line one",
+    "+inserted at line 2",
+    " line two",
+    " line three",
+    "@@ -10,3 +11,3 @@",
+    " line ten",
+    "-old eleven",
+    "+new eleven",
+    " line twelve",
+  ].join("\n");
+
+  const map = parseDiff(diff);
+  assert.equal(map.get(2), "added", "line 2 should be added");
+  assert.equal(map.get(12), "modified", "line 12 should be modified");
+});
+
+test("mapDiffToRendered returns empty map for empty source diff", () => {
+  const result = mapDiffToRendered(new Map(), 10, 20);
+  assert.equal(result.size, 0);
+});
+
+test("mapDiffToRendered proportionally maps source lines to rendered lines", () => {
+  const sourceDiff = new Map();
+  sourceDiff.set(1, "added");    // first line
+  sourceDiff.set(10, "modified"); // last line
+
+  const result = mapDiffToRendered(sourceDiff, 10, 20);
+  // Line 1 (source) → rendered line 0
+  assert.equal(result.get(0), "added");
+  // Line 10 (source) → rendered line 19 (last)
+  assert.equal(result.get(19), "modified");
+});
+
+test("mapDiffToRendered handles single-line source file", () => {
+  const sourceDiff = new Map();
+  sourceDiff.set(1, "added");
+
+  const result = mapDiffToRendered(sourceDiff, 1, 5);
+  // Single source line maps to rendered line 0
+  assert.equal(result.get(0), "added");
+});
+
+test("getDiffMap returns empty map for non-git path", () => {
+  const map = getDiffMap("/tmp/definitely-not-a-git-repo-" + Date.now() + "/file.md", 10);
+  assert.equal(map.size, 0);
 });

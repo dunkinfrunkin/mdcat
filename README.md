@@ -6,7 +6,7 @@
 [![CI](https://github.com/dunkinfrunkin/mdcat/actions/workflows/ci.yml/badge.svg)](https://github.com/dunkinfrunkin/mdcat/actions/workflows/ci.yml)
 [![site](https://img.shields.io/badge/site-mdcat.frankchan.dev-61afef)](https://mdcat.frankchan.dev)
 
-**Terminal pager for Markdown.** Full colour, syntax highlighting, incremental search, mouse support — zero config.
+**Terminal pager for Markdown.** Full colour, syntax highlighting, git diff gutter, incremental search, mouse support — zero config.
 
 ```sh
 npm install -g @dunkinfrunkin/mdcat
@@ -98,6 +98,7 @@ MDCAT_THEME=light mdcat file.md  # env var override
 | Images | `[alt text]` badge in dim |
 | Horizontal rules | Full-width dim `─` line |
 | HTML entities | Decoded (`&amp;`, `&lt;`, …) |
+| Git diff gutter | Green `+` added, yellow `~` modified, red `-` deleted |
 
 ## Contributing
 
@@ -110,7 +111,7 @@ npm install
 npm test
 ```
 
-All PRs must pass `npm test` (97 tests).
+All PRs must pass `npm test` (107 tests).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
