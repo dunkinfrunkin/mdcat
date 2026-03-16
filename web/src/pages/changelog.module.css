@@ -1,0 +1,155 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+.header {
+  margin-bottom: 2.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+}
+
+.subtitle {
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.subtitle a {
+  color: var(--ifm-color-primary);
+  text-decoration: underline;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.release {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  background: var(--mc-surface);
+  transition: border-color 0.15s;
+}
+
+.release:hover {
+  border-color: var(--ifm-color-primary);
+}
+
+.releaseHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.tag {
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.tag:hover {
+  text-decoration: underline;
+}
+
+.date {
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-500);
+}
+
+.releaseName {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: var(--ifm-color-emphasis-800);
+}
+
+.body {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.body h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0.75rem 0 0.35rem;
+}
+
+.body h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0.6rem 0 0.25rem;
+}
+
+.body ul {
+  padding-left: 1.25rem;
+  margin: 0.35rem 0;
+}
+
+.body li {
+  margin: 0.2rem 0;
+}
+
+.body code {
+  background: var(--mc-glass-code);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.body pre {
+  background: var(--mc-glass-code);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.body pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+.error {
+  color: var(--mc-red);
+  padding: 1rem;
+  border: 1px solid var(--mc-red);
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Skeleton loading */
+.skeletonTag {
+  width: 80px;
+  height: 22px;
+  background: var(--mc-glass);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeletonLine {
+  width: 100%;
+  height: 14px;
+  background: var(--mc-glass);
+  border-radius: 3px;
+  margin-bottom: 0.4rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
