@@ -10,6 +10,7 @@ import { toDocx } from "./docx.js";
 import { detectTheme, themeFromArgs, stripThemeArgs } from "./theme.js";
 import { concatFiles } from "./concat.js";
 import { getDiffMap, mapDiffToRendered } from "./git.js";
+import { loadNotes, saveNotes, mapNotesToRendered } from "./notes.js";
 
 marked.use({ gfm: true });
 
@@ -164,7 +165,19 @@ function runTUI(title, content, filePath) {
     diffMap = mapDiffToRendered(sourceDiffMap, sourceLineCount, lines.length);
   }
 
-  launch(title, lines, activeTheme, { lineNumbers: showLineNumbers, diffMap });
+  // Load notes
+  const stripAnsi = (s) => s.replace(/\x1B\]8;;.*?\x1B\\/gs, "").replace(/\x1B\[[0-9;]*m/g, "");
+  const notesMap = filePath ? loadNotes(filePath) : new Map();
+  const noteLineMap = mapNotesToRendered(lines, notesMap, stripAnsi);
+
+  launch(title, lines, activeTheme, {
+    lineNumbers: showLineNumbers,
+    diffMap,
+    notesMap,
+    noteLineMap,
+    filePath,
+    saveNotes,
+  });
 }
 
 // --web / --doc flags

@@ -146,12 +146,21 @@ export function launch(title, lines, theme, opts = {}) {
   // Git diff map (rendered line index → "added" | "modified" | "deleted")
   const diffMap = opts.diffMap ?? new Map();
 
+  // Notes
+  const notesMap = opts.notesMap ?? new Map();       // lineContent → note
+  let noteLineMap = opts.noteLineMap ?? new Map();   // rendered lineIdx → noteText
+  let showNotes = false;                             // Tab toggle
+  const filePath = opts.filePath ?? null;
+  const saveFn = opts.saveNotes ?? (() => {});       // saveNotes callback
+
   // Viewport state
   let offset = 0;
+  let cursor = 0;  // absolute line index of the cursor (highlighted line)
 
   // Search state
-  let mode        = "normal";   // "normal" | "search" | "matches"
+  let mode        = "normal";   // "normal" | "search" | "matches" | "note"
   let searchQuery = "";
+  let noteInput   = "";         // note text being typed
   let matchLines  = [];         // sorted array of line indices with matches
   let matchSet    = new Set();  // for O(1) gutter lookup
   let matchIdx    = 0;
@@ -201,23 +210,41 @@ export function launch(title, lines, theme, opts = {}) {
     // Row 1: top chrome bar
     out.push(move(1, 1) + ERASE_L + topBar(title, w));
 
-    // Rows 2..h-1: content with optional gutter + search highlighting
+    // Rows 2..h-1: content with optional gutter + search highlighting + notes
     const slice = lines.slice(offset, offset + visible());
-    for (let i = 0; i < visible(); i++) {
+    let row = 0;
+    for (let i = 0; i < visible() && row < visible(); i++) {
       const absLine = offset + i;
       const gutter  = gutterFor(absLine);
       let   content = slice[i] ?? "";
       if (searchQuery && matchSet.has(absLine)) {
         content = highlightInLine(content, searchQuery, matchLines[matchIdx] === absLine);
       }
-      out.push(move(i + 2, 1) + ERASE_L + gutter + content);
+      // Highlight cursor line with a subtle background
+      const isCursor = absLine === cursor;
+      const cursorBg = theme === "light" ? `${ESC}[48;2;232;232;240m` : `${ESC}[48;2;40;44;52m`;
+      const cursorOn = isCursor ? cursorBg : "";
+      const cursorOff = isCursor ? RESET : "";
+      out.push(move(row + 2, 1) + ERASE_L + cursorOn + gutter + content + cursorOff);
+      row++;
+      // Show inline note below annotated line
+      if (showNotes && noteLineMap.has(absLine) && row < visible()) {
+        const noteText = noteLineMap.get(absLine);
+        const notePrefix = lineNumbers ? " ".repeat(totalDigits + 1) : "  ";
+        out.push(move(row + 2, 1) + ERASE_L + `${notePrefix}${C.matchFg}  > ${noteText}${RESET}`);
+        row++;
+      }
+    }
+    // Clear remaining rows
+    for (; row < visible(); row++) {
+      out.push(move(row + 2, 1) + ERASE_L);
     }
 
     // Row h: status / search bar
     out.push(move(h, 1) + ERASE_L + statusBar(w));
 
     // Show cursor only in search mode (for the text input)
-    out.push(mode === "search" ? SHOW_CUR : HIDE_CUR);
+    out.push(mode === "search" || mode === "note" ? SHOW_CUR : HIDE_CUR);
 
     process.stdout.write(out.join(""));
   }
@@ -252,13 +279,32 @@ export function launch(title, lines, theme, opts = {}) {
     // Diff gutter marker (single char column before content)
     const diff = diffMap.size > 0 ? (diffMarkerFor(absLine) || " ") : "";
 
-    if (mode === "normal" || !searchQuery) return `${prefix}${diff}${diff ? " " : prefix ? "" : "  "}`;
-    if (matchLines[matchIdx] === absLine)   return `${prefix}${diff ? diff + " " : ""}${C.matchFg}▶${RESET} `;
-    if (matchSet.has(absLine))              return `${prefix}${diff ? diff + " " : ""}${C.otherMatchFg}›${RESET} `;
-    return `${prefix}${diff}${diff ? " " : prefix ? "" : "  "}`;
+    // Note marker
+    const hasNote = noteLineMap.has(absLine);
+    const noteMarker = hasNote ? `${C.matchFg}*${RESET}` : "";
+
+    const gutterSuffix = noteMarker || diff || "";
+    const pad = gutterSuffix ? " " : (prefix ? "" : "  ");
+
+    if (mode === "normal" || mode === "note" || !searchQuery) return `${prefix}${gutterSuffix}${pad}`;
+    if (matchLines[matchIdx] === absLine)   return `${prefix}${gutterSuffix ? gutterSuffix + " " : ""}${C.matchFg}▶${RESET} `;
+    if (matchSet.has(absLine))              return `${prefix}${gutterSuffix ? gutterSuffix + " " : ""}${C.otherMatchFg}›${RESET} `;
+    return `${prefix}${gutterSuffix}${pad}`;
   }
 
   function statusBar(w) {
+    if (mode === "note") {
+      const prompt  = `${C.matchFg}note:${RESET}`;
+      const cursor  = `${C.rev} ${C.revOff}`;
+      const nText   = noteInput + cursor;
+      const hints   = `${C.dim}  Esc cancel  Enter save${RESET}`;
+      const left    = ` ${prompt} ${nText}`;
+      const leftW   = 7 + noteInput.length + 1;
+      const hintsW  = "  Esc cancel  Enter save".length;
+      const gap     = Math.max(1, w - leftW - hintsW - 1);
+      return `${C.chromeBg}${left}${" ".repeat(gap)}${hints} ${RESET}`;
+    }
+
     if (mode === "search") {
       const prompt  = `${C.accentFg}/${RESET}`;
       const cursor  = `${C.rev} ${C.revOff}`;
@@ -301,10 +347,12 @@ export function launch(title, lines, theme, opts = {}) {
 
     const mouseHint = mouseEnabled ? "" : `${C.matchFg} [select mode]${RESET}`;
     const mouseW    = mouseEnabled ? 0 : " [select mode]".length;
-    const hints  = `${C.dim} q  y  /  j k  ↑↓  space  g G  L  M${RESET}`;
-    const right  = `${C.dimFg} ${pct} ${RESET}`;
-    const hintsW = " q  y  /  j k  ↑↓  space  g G  L  M".length;
-    const rightW = ` ${pct} `.length;
+    const noteCount = notesMap.size > 0 ? `${C.matchFg} ${notesMap.size}*${RESET}` : "";
+    const noteW = notesMap.size > 0 ? ` ${notesMap.size}*`.length : 0;
+    const hints  = `${C.dim} q  y  /  a  Tab  j k  space  g G  L  M${RESET}`;
+    const right  = `${noteCount}${C.dimFg} ${pct} ${RESET}`;
+    const hintsW = " q  y  /  a  Tab  j k  space  g G  L  M".length;
+    const rightW = ` ${pct} `.length + noteW;
     const gap    = Math.max(0, w - hintsW - mouseW - rightW);
     return `${C.chromeBg}${hints}${mouseHint}${" ".repeat(gap)}${right}${RESET}`;
   }
@@ -337,8 +385,51 @@ export function launch(title, lines, theme, opts = {}) {
     const mouse = s.match(/\x1B\[<(\d+);\d+;\d+[mM]/);
     if (mouse) {
       const btn = parseInt(mouse[1]);
-      if (btn === 64) { offset = Math.max(offset - 3, 0);        draw(); }
-      if (btn === 65) { offset = Math.min(offset + 3, maxOff()); draw(); }
+      if (btn === 64) { offset = Math.max(offset - 3, 0); cursor = Math.max(cursor, offset); draw(); }
+      if (btn === 65) { offset = Math.min(offset + 3, maxOff()); cursor = Math.min(cursor, offset + visible() - 1); draw(); }
+      return;
+    }
+
+    // Note mode — intercept all keystrokes for note text input
+    if (mode === "note") {
+      if (s === "\x1B" || s === "\x03") {
+        mode = "normal"; noteInput = "";
+        draw(); return;
+      }
+      if (s === "\r" || s === "\n") {
+        if (noteInput.trim()) {
+          const absLine = cursor;
+          const lineContent = plain(lines[absLine] ?? "").trim();
+          if (lineContent) {
+            notesMap.set(lineContent, {
+              lineContent,
+              lineNum: absLine,
+              text: noteInput.trim(),
+              created: new Date().toISOString(),
+            });
+            // Rebuild rendered note map
+            noteLineMap = new Map();
+            for (let li = 0; li < lines.length; li++) {
+              const pl = plain(lines[li]).trim();
+              if (pl && notesMap.has(pl)) {
+                noteLineMap.set(li, notesMap.get(pl).text);
+              }
+            }
+            saveFn(filePath, notesMap);
+            showToast("Note saved");
+          }
+        }
+        mode = "normal"; noteInput = "";
+        draw(); return;
+      }
+      if (s === "\x7f" || s === "\x08") {
+        noteInput = noteInput.slice(0, -1);
+        draw(); return;
+      }
+      if (s.length === 1 && s >= " ") {
+        noteInput += s;
+        draw(); return;
+      }
       return;
     }
 
@@ -372,28 +463,78 @@ export function launch(title, lines, theme, opts = {}) {
         return cleanup();
 
       case "j": case "\x1B[B":
-        offset = Math.min(offset + 1, maxOff()); break;
+        cursor = Math.min(cursor + 1, lines.length - 1);
+        // Scroll if cursor goes below viewport
+        if (cursor >= offset + visible()) offset = Math.min(offset + 1, maxOff());
+        break;
       case "k": case "\x1B[A":
-        offset = Math.max(offset - 1, 0); break;
+        cursor = Math.max(cursor - 1, 0);
+        // Scroll if cursor goes above viewport
+        if (cursor < offset) offset = Math.max(offset - 1, 0);
+        break;
 
       case " ": case "f": case "\x1B[6~":
-        offset = Math.min(offset + visible(), maxOff()); break;
+        offset = Math.min(offset + visible(), maxOff());
+        cursor = Math.min(Math.max(cursor, offset), offset + visible() - 1);
+        break;
       case "b": case "\x1B[5~":
-        offset = Math.max(offset - visible(), 0); break;
+        offset = Math.max(offset - visible(), 0);
+        cursor = Math.max(Math.min(cursor, offset + visible() - 1), offset);
+        break;
 
       case "d":
-        offset = Math.min(offset + Math.floor(visible() / 2), maxOff()); break;
+        offset = Math.min(offset + Math.floor(visible() / 2), maxOff());
+        cursor = Math.min(Math.max(cursor, offset), offset + visible() - 1);
+        break;
       case "u":
-        offset = Math.max(offset - Math.floor(visible() / 2), 0); break;
+        offset = Math.max(offset - Math.floor(visible() / 2), 0);
+        cursor = Math.max(Math.min(cursor, offset + visible() - 1), offset);
+        break;
 
-      case "g": offset = 0;        break;
-      case "G": offset = maxOff(); break;
+      case "g": offset = 0; cursor = 0; break;
+      case "G": offset = maxOff(); cursor = lines.length - 1; break;
 
       case "y": {
         const text = lines.slice(offset, offset + visible()).map(plain).join("\n");
         copyText(text);
         showToast("Copied to clipboard"); return;
       }
+
+      case "a": {
+        if (!filePath) { showToast("Notes require a file (not stdin)"); return; }
+        mode = "note"; noteInput = "";
+        // Pre-fill with existing note if one exists on cursor line
+        const curLine = plain(lines[cursor] ?? "").trim();
+        if (curLine && notesMap.has(curLine)) {
+          noteInput = notesMap.get(curLine).text;
+        }
+        draw(); return;
+      }
+
+      case "x": {
+        const xLine = plain(lines[cursor] ?? "").trim();
+        if (xLine && notesMap.has(xLine)) {
+          notesMap.delete(xLine);
+          noteLineMap.delete(offset);
+          // Rebuild
+          noteLineMap = new Map();
+          for (let li = 0; li < lines.length; li++) {
+            const pl = plain(lines[li]).trim();
+            if (pl && notesMap.has(pl)) {
+              noteLineMap.set(li, notesMap.get(pl).text);
+            }
+          }
+          saveFn(filePath, notesMap);
+          showToast("Note deleted");
+        } else {
+          changed = false;
+        }
+        break;
+      }
+
+      case "\t": // Tab — toggle inline notes
+        showNotes = !showNotes;
+        showToast(showNotes ? "Notes visible" : "Notes hidden"); return;
 
       case "L":
         lineNumbers = !lineNumbers;
