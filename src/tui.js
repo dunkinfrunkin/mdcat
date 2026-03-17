@@ -49,27 +49,31 @@ let C = { ...DARK,
   revOff:      `${ESC}[27m`,
 };
 
-const UNDERLINE_ON  = `${ESC}[4m`;
-const UNDERLINE_OFF = `${ESC}[24m`;
+// Highlight colors for annotated text (highlighter pen effect)
+const HL_NOTE_DARK  = `${ESC}[48;2;62;58;32m`;  // warm dark yellow bg
+const HL_NOTE_LIGHT = `${ESC}[48;2;255;243;191m`; // pale yellow bg
+const HL_NOTE_OFF   = `${ESC}[49m`;
+const NOTE_STAR     = `${ESC}[38;2;229;192;123m*${ESC}[39m`;
 
 /**
- * Underline all occurrences of `anchor` text within an ANSI-coloured line.
- * Walks char-by-char like highlightInLine to handle escape sequences.
+ * Highlight all occurrences of `anchor` text within an ANSI-coloured line
+ * with a background color (like a highlighter pen) and append a *.
  */
-function underlineAnchor(line, anchor) {
+function highlightAnchor(line, anchor, isLight) {
   if (!anchor) return line;
   const p = plain(line);
   const idx = p.indexOf(anchor);
   if (idx === -1) return line;
   const endIdx = idx + anchor.length;
 
+  const hlOn = isLight ? HL_NOTE_LIGHT : HL_NOTE_DARK;
   let out = "";
   let vis = 0;
   let inside = false;
   let i = 0;
   while (i < line.length) {
-    if (!inside && vis === idx)   { out += UNDERLINE_ON;  inside = true; }
-    if (inside  && vis === endIdx) { out += UNDERLINE_OFF; inside = false; }
+    if (!inside && vis === idx)    { out += hlOn; inside = true; }
+    if (inside  && vis === endIdx) { out += HL_NOTE_OFF + NOTE_STAR; inside = false; }
 
     if (line[i] === "\x1B" && line[i + 1] === "]") {
       const end = line.indexOf("\x1B\\", i + 2);
@@ -81,7 +85,7 @@ function underlineAnchor(line, anchor) {
     }
     out += line[i]; vis++; i++;
   }
-  if (inside) out += UNDERLINE_OFF;
+  if (inside) out += HL_NOTE_OFF + NOTE_STAR;
   return out;
 }
 
@@ -313,10 +317,10 @@ export function launch(title, lines, theme, opts = {}) {
       if (searchQuery && matchSet.has(absLine)) {
         content = highlightInLine(content, searchQuery, matchLines[matchIdx] === absLine);
       }
-      // Underline annotated text fragments
+      // Highlight annotated text fragments with background + asterisk
       if (noteLineMap.has(absLine)) {
         for (const n of noteLineMap.get(absLine)) {
-          content = underlineAnchor(content, n.anchor);
+          content = highlightAnchor(content, n.anchor, theme === "light");
         }
       }
       // Select mode: show char cursor / selection on the cursor line
@@ -384,11 +388,7 @@ export function launch(title, lines, theme, opts = {}) {
     // Diff gutter marker (single char column before content)
     const diff = diffMap.size > 0 ? (diffMarkerFor(absLine) || " ") : "";
 
-    // Note marker
-    const hasNote = noteLineMap.has(absLine);
-    const noteMarker = hasNote ? `${C.matchFg}*${RESET}` : "";
-
-    const gutterSuffix = noteMarker || diff || "";
+    const gutterSuffix = diff || "";
     const pad = gutterSuffix ? " " : (prefix ? "" : "  ");
 
     if (mode === "normal" || mode === "note" || !searchQuery) return `${prefix}${gutterSuffix}${pad}`;
@@ -460,6 +460,22 @@ export function launch(title, lines, theme, opts = {}) {
       const rightW   = ` ${pct} `.length;
       const gap      = Math.max(0, w - (3 + toast.length) - rightW);
       return `${C.chromeBg}${toastStr}${" ".repeat(gap)}${right}${RESET}`;
+    }
+
+    // Show note tooltip when cursor is on a line with annotations
+    if (noteLineMap.has(cursor)) {
+      const lineNotes = noteLineMap.get(cursor);
+      const tooltipParts = lineNotes.map(n => `${C.matchFg}${n.anchor}${RESET}${C.dimFg}: ${n.text}${RESET}`);
+      const tooltip = tooltipParts.join("  ");
+      const tooltipPlain = lineNotes.map(n => `${n.anchor}: ${n.text}`).join("  ");
+      const right = `${C.dimFg} ${pct} ${RESET}`;
+      const rightW2 = ` ${pct} `.length;
+      const maxTooltipW = w - 3 - rightW2;
+      const truncTooltip = tooltipPlain.length > maxTooltipW
+        ? tooltip.slice(0, maxTooltipW) + "..."
+        : tooltip;
+      const gap2 = Math.max(0, w - Math.min(tooltipPlain.length, maxTooltipW) - 2 - rightW2);
+      return `${C.chromeBg} ${truncTooltip}${" ".repeat(gap2)}${right}${RESET}`;
     }
 
     const mouseHint = mouseEnabled ? "" : `${C.matchFg} [select mode]${RESET}`;
