@@ -167,13 +167,13 @@ function runTUI(title, content, filePath) {
 
   // Load notes
   const stripAnsi = (s) => s.replace(/\x1B\]8;;.*?\x1B\\/gs, "").replace(/\x1B\[[0-9;]*m/g, "");
-  const notesMap = filePath ? loadNotes(filePath) : new Map();
-  const noteLineMap = mapNotesToRendered(lines, notesMap, stripAnsi);
+  const notes = filePath ? loadNotes(filePath) : [];
+  const noteLineMap = mapNotesToRendered(lines, notes, stripAnsi);
 
   launch(title, lines, activeTheme, {
     lineNumbers: showLineNumbers,
     diffMap,
-    notesMap,
+    notes,
     noteLineMap,
     filePath,
     saveNotes,
