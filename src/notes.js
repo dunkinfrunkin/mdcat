@@ -12,56 +12,53 @@ function notesPath(filePath) {
 }
 
 /**
- * Load notes for a file. Returns a Map<lineContent, note>.
- * Each note: { lineContent, lineNum, text, created }
+ * Load notes for a file. Returns an array of notes.
+ * Each note: { anchor, text, lineHint, created }
+ * anchor = the specific text fragment being annotated
  */
 export function loadNotes(filePath) {
-  if (!filePath) return new Map();
+  if (!filePath) return [];
   const p = notesPath(filePath);
-  if (!existsSync(p)) return new Map();
+  if (!existsSync(p)) return [];
   try {
     const data = JSON.parse(readFileSync(p, "utf8"));
-    const map = new Map();
-    for (const note of data.notes ?? []) {
-      map.set(note.lineContent, note);
-    }
-    return map;
+    return data.notes ?? [];
   } catch {
-    return new Map();
+    return [];
   }
 }
 
 /**
  * Save notes for a file.
  * @param {string} filePath - Absolute path to the source file
- * @param {Map} notesMap - Map<lineContent, note>
+ * @param {Array} notes - Array of note objects
  */
-export function saveNotes(filePath, notesMap) {
+export function saveNotes(filePath, notes) {
   if (!filePath) return;
   mkdirSync(NOTES_DIR, { recursive: true });
-  const data = {
-    file: filePath,
-    notes: [...notesMap.values()],
-  };
+  const data = { file: filePath, notes };
   writeFileSync(notesPath(filePath), JSON.stringify(data, null, 2));
 }
 
 /**
- * Build a lookup from rendered line index to note text.
- * Matches by plain-text content of each rendered line against note lineContent keys.
+ * Find which rendered lines contain which note anchors.
+ * Returns a Map<lineIndex, Array<{anchor, text}>> for lines that have annotations.
  *
  * @param {string[]} lines - Rendered lines (with ANSI)
- * @param {Map} notesMap - Map<lineContent, note>
+ * @param {Array} notes - Array of note objects with .anchor
  * @param {function} stripFn - Function to strip ANSI from a line
- * @returns {Map<number, string>} - Map<lineIndex, noteText>
+ * @returns {Map<number, Array<{anchor, text}>>}
  */
-export function mapNotesToRendered(lines, notesMap, stripFn) {
-  if (!notesMap || notesMap.size === 0) return new Map();
+export function mapNotesToRendered(lines, notes, stripFn) {
+  if (!notes || notes.length === 0) return new Map();
   const result = new Map();
   for (let i = 0; i < lines.length; i++) {
-    const plainLine = stripFn(lines[i]).trim();
-    if (plainLine && notesMap.has(plainLine)) {
-      result.set(i, notesMap.get(plainLine).text);
+    const plainLine = stripFn(lines[i]);
+    for (const note of notes) {
+      if (plainLine.includes(note.anchor)) {
+        if (!result.has(i)) result.set(i, []);
+        result.get(i).push({ anchor: note.anchor, text: note.text });
+      }
     }
   }
   return result;
