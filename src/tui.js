@@ -49,6 +49,80 @@ let C = { ...DARK,
   revOff:      `${ESC}[27m`,
 };
 
+const UNDERLINE_ON  = `${ESC}[4m`;
+const UNDERLINE_OFF = `${ESC}[24m`;
+
+/**
+ * Underline all occurrences of `anchor` text within an ANSI-coloured line.
+ * Walks char-by-char like highlightInLine to handle escape sequences.
+ */
+function underlineAnchor(line, anchor) {
+  if (!anchor) return line;
+  const p = plain(line);
+  const idx = p.indexOf(anchor);
+  if (idx === -1) return line;
+  const endIdx = idx + anchor.length;
+
+  let out = "";
+  let vis = 0;
+  let inside = false;
+  let i = 0;
+  while (i < line.length) {
+    if (!inside && vis === idx)   { out += UNDERLINE_ON;  inside = true; }
+    if (inside  && vis === endIdx) { out += UNDERLINE_OFF; inside = false; }
+
+    if (line[i] === "\x1B" && line[i + 1] === "]") {
+      const end = line.indexOf("\x1B\\", i + 2);
+      if (end !== -1) { out += line.slice(i, end + 2); i = end + 2; continue; }
+    }
+    if (line[i] === "\x1B" && line[i + 1] === "[") {
+      const end = line.indexOf("m", i + 2);
+      if (end !== -1) { out += line.slice(i, end + 1); i = end + 1; continue; }
+    }
+    out += line[i]; vis++; i++;
+  }
+  if (inside) out += UNDERLINE_OFF;
+  return out;
+}
+
+/**
+ * Render a line with character-level cursor and optional selection highlight.
+ * Returns the line with the cursor/selection ANSI injected.
+ */
+function renderSelection(line, col, start, end) {
+  const p = plain(line);
+  const hasSelection = start >= 0 && end >= 0 && start !== end;
+  const sMin = hasSelection ? Math.min(start, end) : -1;
+  const sMax = hasSelection ? Math.max(start, end) : -1;
+
+  let out = "";
+  let vis = 0;
+  let i = 0;
+  while (i < line.length) {
+    // Open selection highlight
+    if (hasSelection && vis === sMin) out += `${ESC}[7m`;
+    // Close selection highlight
+    if (hasSelection && vis === sMax) out += `${ESC}[27m`;
+    // Cursor indicator (reverse the single char)
+    if (!hasSelection && vis === col) out += `${ESC}[7m`;
+    if (!hasSelection && vis === col + 1) out += `${ESC}[27m`;
+
+    if (line[i] === "\x1B" && line[i + 1] === "]") {
+      const end2 = line.indexOf("\x1B\\", i + 2);
+      if (end2 !== -1) { out += line.slice(i, end2 + 2); i = end2 + 2; continue; }
+    }
+    if (line[i] === "\x1B" && line[i + 1] === "[") {
+      const end2 = line.indexOf("m", i + 2);
+      if (end2 !== -1) { out += line.slice(i, end2 + 1); i = end2 + 1; continue; }
+    }
+    out += line[i]; vis++; i++;
+  }
+  // If cursor is at end of line
+  if (!hasSelection && vis === col) out += `${ESC}[7m ${ESC}[27m`;
+  if (hasSelection && vis <= sMax) out += `${ESC}[27m`;
+  return out;
+}
+
 // Strip ANSI from a line to get searchable plain text
 const STRIP_SGR = /\x1B\[[0-9;]*m/g;
 const STRIP_OSC = /\x1B\]8;;.*?\x1B\\/gs;
@@ -146,9 +220,9 @@ export function launch(title, lines, theme, opts = {}) {
   // Git diff map (rendered line index → "added" | "modified" | "deleted")
   const diffMap = opts.diffMap ?? new Map();
 
-  // Notes
-  const notesMap = opts.notesMap ?? new Map();       // lineContent → note
-  let noteLineMap = opts.noteLineMap ?? new Map();   // rendered lineIdx → noteText
+  // Notes (anchor-based: each note has .anchor text fragment + .text)
+  let notes = opts.notes ?? [];                      // Array of { anchor, text, lineHint, created }
+  let noteLineMap = opts.noteLineMap ?? new Map();   // rendered lineIdx → Array<{anchor, text}>
   let showNotes = false;                             // Tab toggle
   const filePath = opts.filePath ?? null;
   const saveFn = opts.saveNotes ?? (() => {});       // saveNotes callback
@@ -157,8 +231,14 @@ export function launch(title, lines, theme, opts = {}) {
   let offset = 0;
   let cursor = 0;  // absolute line index of the cursor (highlighted line)
 
+  // Selection state (character-level within a line)
+  let selCol     = 0;     // character cursor position in plain text
+  let selStart   = -1;    // selection start column (-1 = not selecting)
+  let selEnd     = -1;    // selection end column
+  let selText    = "";    // the selected text fragment
+
   // Search state
-  let mode        = "normal";   // "normal" | "search" | "matches" | "note"
+  let mode        = "normal";   // "normal" | "search" | "matches" | "note" | "select"
   let searchQuery = "";
   let noteInput   = "";         // note text being typed
   let matchLines  = [];         // sorted array of line indices with matches
@@ -192,6 +272,19 @@ export function launch(title, lines, theme, opts = {}) {
     if (matchLines.length > 0) scrollToMatch(0);
   }
 
+  function rebuildNoteMap() {
+    noteLineMap = new Map();
+    for (let li = 0; li < lines.length; li++) {
+      const pl = plain(lines[li]);
+      for (const note of notes) {
+        if (pl.includes(note.anchor)) {
+          if (!noteLineMap.has(li)) noteLineMap.set(li, []);
+          noteLineMap.get(li).push({ anchor: note.anchor, text: note.text });
+        }
+      }
+    }
+  }
+
   function scrollToMatch(idx) {
     matchIdx = ((idx % matchLines.length) + matchLines.length) % matchLines.length;
     const target = matchLines[matchIdx];
@@ -220,11 +313,21 @@ export function launch(title, lines, theme, opts = {}) {
       if (searchQuery && matchSet.has(absLine)) {
         content = highlightInLine(content, searchQuery, matchLines[matchIdx] === absLine);
       }
+      // Underline annotated text fragments
+      if (noteLineMap.has(absLine)) {
+        for (const n of noteLineMap.get(absLine)) {
+          content = underlineAnchor(content, n.anchor);
+        }
+      }
+      // Select mode: show char cursor / selection on the cursor line
+      if (mode === "select" && absLine === cursor) {
+        content = renderSelection(content, selCol, selStart, selEnd);
+      }
       // Highlight cursor line with a subtle background
       const isCursor = absLine === cursor;
       const cursorBg = theme === "light" ? `${ESC}[48;2;232;232;240m` : `${ESC}[48;2;40;44;52m`;
-      const cursorOn = isCursor ? cursorBg : "";
-      const cursorOff = isCursor ? RESET : "";
+      const cursorOn = isCursor && mode !== "select" ? cursorBg : "";
+      const cursorOff = isCursor && mode !== "select" ? RESET : "";
       out.push(move(row + 2, 1) + ERASE_L + cursorOn + gutter + content + cursorOff);
       row++;
       // Show inline note below annotated line
@@ -244,7 +347,7 @@ export function launch(title, lines, theme, opts = {}) {
     out.push(move(h, 1) + ERASE_L + statusBar(w));
 
     // Show cursor only in search mode (for the text input)
-    out.push(mode === "search" || mode === "note" ? SHOW_CUR : HIDE_CUR);
+    out.push(mode === "search" || mode === "note" || mode === "select" ? SHOW_CUR : HIDE_CUR);
 
     process.stdout.write(out.join(""));
   }
@@ -293,6 +396,18 @@ export function launch(title, lines, theme, opts = {}) {
   }
 
   function statusBar(w) {
+    if (mode === "select") {
+      const selStatus = selStart >= 0
+        ? `${C.greenFg}selecting...${RESET}`
+        : `${C.accentFg}move h/l${RESET}`;
+      const hints = `${C.dim}  h/l move  Space mark  Enter annotate  Esc cancel${RESET}`;
+      const left = `  ${C.matchFg}SELECT${RESET}  ${selStatus}`;
+      const leftW = 9 + (selStart >= 0 ? 12 : 8);
+      const hintsW = "  h/l move  Space mark  Enter annotate  Esc cancel".length;
+      const gap = Math.max(1, w - leftW - hintsW - 1);
+      return `${C.chromeBg}${left}${" ".repeat(gap)}${hints} ${RESET}`;
+    }
+
     if (mode === "note") {
       const prompt  = `${C.matchFg}note:${RESET}`;
       const cursor  = `${C.rev} ${C.revOff}`;
@@ -347,8 +462,8 @@ export function launch(title, lines, theme, opts = {}) {
 
     const mouseHint = mouseEnabled ? "" : `${C.matchFg} [select mode]${RESET}`;
     const mouseW    = mouseEnabled ? 0 : " [select mode]".length;
-    const noteCount = notesMap.size > 0 ? `${C.matchFg} ${notesMap.size}*${RESET}` : "";
-    const noteW = notesMap.size > 0 ? ` ${notesMap.size}*`.length : 0;
+    const noteCount = notes.length > 0 ? `${C.matchFg} ${notes.length}*${RESET}` : "";
+    const noteW = notes.length > 0 ? ` ${notes.length}*`.length : 0;
     const hints  = `${C.dim} q  y  /  a  Tab  j k  space  g G  L  M${RESET}`;
     const right  = `${noteCount}${C.dimFg} ${pct} ${RESET}`;
     const hintsW = " q  y  /  a  Tab  j k  space  g G  L  M".length;
@@ -390,36 +505,71 @@ export function launch(title, lines, theme, opts = {}) {
       return;
     }
 
-    // Note mode — intercept all keystrokes for note text input
-    if (mode === "note") {
+    // Select mode — character-level cursor for text selection
+    if (mode === "select") {
+      const curPlain = plain(lines[cursor] ?? "");
+      const maxCol = Math.max(0, curPlain.length - 1);
       if (s === "\x1B" || s === "\x03") {
-        mode = "normal"; noteInput = "";
+        mode = "normal"; selStart = -1; selEnd = -1; selCol = 0;
+        draw(); return;
+      }
+      if (s === "h" || s === "\x1B[D") {
+        selCol = Math.max(0, selCol - 1);
+        if (selStart >= 0) selEnd = selCol;
+        draw(); return;
+      }
+      if (s === "l" || s === "\x1B[C") {
+        selCol = Math.min(maxCol, selCol + 1);
+        if (selStart >= 0) selEnd = selCol;
+        draw(); return;
+      }
+      if (s === " ") {
+        if (selStart < 0) {
+          // First press: mark start
+          selStart = selCol; selEnd = selCol;
+        } else {
+          // Second press: finalize selection end
+          selEnd = selCol;
+        }
         draw(); return;
       }
       if (s === "\r" || s === "\n") {
-        if (noteInput.trim()) {
-          const absLine = cursor;
-          const lineContent = plain(lines[absLine] ?? "").trim();
-          if (lineContent) {
-            notesMap.set(lineContent, {
-              lineContent,
-              lineNum: absLine,
-              text: noteInput.trim(),
-              created: new Date().toISOString(),
-            });
-            // Rebuild rendered note map
-            noteLineMap = new Map();
-            for (let li = 0; li < lines.length; li++) {
-              const pl = plain(lines[li]).trim();
-              if (pl && notesMap.has(pl)) {
-                noteLineMap.set(li, notesMap.get(pl).text);
-              }
-            }
-            saveFn(filePath, notesMap);
-            showToast("Note saved");
+        // Finalize selection and enter note mode
+        if (selStart >= 0) {
+          const sMin = Math.min(selStart, selEnd >= 0 ? selEnd : selStart);
+          const sMax = Math.max(selStart, selEnd >= 0 ? selEnd : selStart);
+          selText = curPlain.slice(sMin, sMax + 1).trim();
+          if (selText) {
+            mode = "note"; noteInput = "";
+            draw(); return;
           }
         }
-        mode = "normal"; noteInput = "";
+        mode = "normal"; selStart = -1; selEnd = -1;
+        draw(); return;
+      }
+      return;
+    }
+
+    // Note mode — intercept all keystrokes for note text input
+    if (mode === "note") {
+      if (s === "\x1B" || s === "\x03") {
+        mode = "normal"; noteInput = ""; selText = ""; selStart = -1; selEnd = -1;
+        draw(); return;
+      }
+      if (s === "\r" || s === "\n") {
+        if (noteInput.trim() && selText) {
+          notes.push({
+            anchor: selText,
+            text: noteInput.trim(),
+            lineHint: cursor,
+            created: new Date().toISOString(),
+          });
+          rebuildNoteMap();
+          saveFn(filePath, notes);
+          showNotes = true;
+          showToast("Note saved");
+        }
+        mode = "normal"; noteInput = ""; selText = ""; selStart = -1; selEnd = -1;
         draw(); return;
       }
       if (s === "\x7f" || s === "\x08") {
@@ -500,31 +650,18 @@ export function launch(title, lines, theme, opts = {}) {
         showToast("Copied to clipboard"); return;
       }
 
-      case "a": {
+      case "a": case "s": {
         if (!filePath) { showToast("Notes require a file (not stdin)"); return; }
-        mode = "note"; noteInput = "";
-        // Pre-fill with existing note if one exists on cursor line
-        const curLine = plain(lines[cursor] ?? "").trim();
-        if (curLine && notesMap.has(curLine)) {
-          noteInput = notesMap.get(curLine).text;
-        }
+        mode = "select"; selCol = 0; selStart = -1; selEnd = -1; selText = "";
         draw(); return;
       }
 
       case "x": {
-        const xLine = plain(lines[cursor] ?? "").trim();
-        if (xLine && notesMap.has(xLine)) {
-          notesMap.delete(xLine);
-          noteLineMap.delete(offset);
-          // Rebuild
-          noteLineMap = new Map();
-          for (let li = 0; li < lines.length; li++) {
-            const pl = plain(lines[li]).trim();
-            if (pl && notesMap.has(pl)) {
-              noteLineMap.set(li, notesMap.get(pl).text);
-            }
-          }
-          saveFn(filePath, notesMap);
+        if (noteLineMap.has(cursor)) {
+          const anchorsOnLine = noteLineMap.get(cursor).map(n => n.anchor);
+          notes = notes.filter(n => !anchorsOnLine.includes(n.anchor));
+          rebuildNoteMap();
+          saveFn(filePath, notes);
           showToast("Note deleted");
         } else {
           changed = false;
