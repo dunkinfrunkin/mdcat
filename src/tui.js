@@ -331,11 +331,13 @@ export function launch(title, lines, theme, opts = {}) {
       out.push(move(row + 2, 1) + ERASE_L + cursorOn + gutter + content + cursorOff);
       row++;
       // Show inline note below annotated line
-      if (showNotes && noteLineMap.has(absLine) && row < visible()) {
-        const noteText = noteLineMap.get(absLine);
+      if (showNotes && noteLineMap.has(absLine)) {
         const notePrefix = lineNumbers ? " ".repeat(totalDigits + 1) : "  ";
-        out.push(move(row + 2, 1) + ERASE_L + `${notePrefix}${C.matchFg}  > ${noteText}${RESET}`);
-        row++;
+        for (const n of noteLineMap.get(absLine)) {
+          if (row >= visible()) break;
+          out.push(move(row + 2, 1) + ERASE_L + `${notePrefix}${C.matchFg}  > ${C.dim}${n.anchor}${RESET}${C.matchFg}: ${n.text}${RESET}`);
+          row++;
+        }
       }
     }
     // Clear remaining rows
@@ -494,14 +496,67 @@ export function launch(title, lines, theme, opts = {}) {
   process.stdin.on("data", (raw) => {
     const s = raw.toString();
 
-    // Mouse SGR events: \x1B[<btn;col;rowm
-    // SGR mouse: ESC[<btn;col;rowM (press) or ESC[<btn;col;rowm (release)
-    // Scroll wheel sends press events (M), so match both m and M
-    const mouse = s.match(/\x1B\[<(\d+);\d+;\d+[mM]/);
+    // Mouse SGR events: \x1B[<btn;col;row[Mm]
+    const mouse = s.match(/\x1B\[<(\d+);(\d+);(\d+)([mM])/);
     if (mouse) {
       const btn = parseInt(mouse[1]);
-      if (btn === 64) { offset = Math.max(offset - 3, 0); cursor = Math.max(cursor, offset); draw(); }
-      if (btn === 65) { offset = Math.min(offset + 3, maxOff()); cursor = Math.min(cursor, offset + visible() - 1); draw(); }
+      const mcol = parseInt(mouse[2]) - 1; // 0-based column
+      const mrow = parseInt(mouse[3]) - 1; // 0-based row
+      const isPress = mouse[4] === "M";
+
+      // Scroll wheel
+      if (btn === 64) { offset = Math.max(offset - 3, 0); cursor = Math.max(cursor, offset); draw(); return; }
+      if (btn === 65) { offset = Math.min(offset + 3, maxOff()); cursor = Math.min(cursor, offset + visible() - 1); draw(); return; }
+
+      // Left click (btn 0) — set cursor + enter select mode for annotation
+      if (btn === 0 && isPress && mrow >= 1 && mrow < rows() - 1) {
+        const absLine = offset + (mrow - 1);
+        if (absLine < lines.length) {
+          cursor = absLine;
+          if (filePath && mode !== "note") {
+            // Estimate char position (subtract gutter width)
+            const gutterLen = lineNumbers ? totalDigits + 2 : 2;
+            const charPos = Math.max(0, mcol - gutterLen);
+            const curPlain = plain(lines[cursor] ?? "");
+            selCol = Math.min(charPos, Math.max(0, curPlain.length - 1));
+            selStart = selCol; selEnd = selCol;
+            mode = "select";
+          }
+          draw();
+        }
+        return;
+      }
+
+      // Left drag (btn 32) — extend selection
+      if (btn === 32 && mode === "select" && mrow >= 1 && mrow < rows() - 1) {
+        const gutterLen = lineNumbers ? totalDigits + 2 : 2;
+        const charPos = Math.max(0, mcol - gutterLen);
+        const curPlain = plain(lines[cursor] ?? "");
+        selCol = Math.min(charPos, Math.max(0, curPlain.length - 1));
+        selEnd = selCol;
+        draw();
+        return;
+      }
+
+      // Left release (btn 0, m) — finalize selection, prompt for note
+      if (btn === 0 && !isPress && mode === "select") {
+        if (selStart >= 0 && selEnd >= 0 && selStart !== selEnd) {
+          const curPlain = plain(lines[cursor] ?? "");
+          const sMin = Math.min(selStart, selEnd);
+          const sMax = Math.max(selStart, selEnd);
+          selText = curPlain.slice(sMin, sMax + 1).trim();
+          if (selText) {
+            mode = "note"; noteInput = "";
+            draw();
+            return;
+          }
+        }
+        // No selection made — just set cursor position
+        mode = "normal"; selStart = -1; selEnd = -1;
+        draw();
+        return;
+      }
+
       return;
     }
 
